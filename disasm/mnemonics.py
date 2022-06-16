@@ -95,6 +95,27 @@ PUSH_imm1632                = 0x68
 IMUL_r1632_rm1632_imm1632   = 0x69
 PUSH_imm8                   = 0x6A
 IMUL_r1632_rm1632_imm8      = 0x6B
+INSB                        = 0x6C
+INS_WD                      = 0x6D
+OUTSB                       = 0x6E
+OUTS_WD                     = 0x6F
+JO_rel8                     = 0x70
+JNO_rel8                    = 0x71
+JB_rel8                     = 0x72
+JNB_rel8                    = 0x73
+JZ_rel8                     = 0x74
+JNZ_rel8                    = 0x75
+JBE_rel8                    = 0x76
+JNBE_rel8                   = 0x77
+JS_rel8                     = 0x78
+JNS_rel8                    = 0x79
+JP_rel8                     = 0x7A
+JNP_rel8                    = 0x7B
+JL_rel8                     = 0x7C
+JNL_rel8                    = 0x7D
+JLE_rel8                    = 0x7E
+JNLE_rel8                   = 0x7F
+
 
 
 
