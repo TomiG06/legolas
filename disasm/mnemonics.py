@@ -17,7 +17,7 @@ sgmnt_name = ['cs', 'ds', 'es', 'ss', 'fs', 'gs']
 
 sgmnt = dict(zip(sgmnt_ovrd, sgmnt_name))
 
-pfx = [OP_SIZE, ADDR_SIZE, *sgmnt_ovrd, REPEAT, LOCK]
+pfx = [OP_SIZE, ADDR_SIZE, *sgmnt_ovrd, REP_REPE, LOCK]
 
 #Opcodes
 
@@ -115,9 +115,76 @@ JL_rel8                     = 0x7C
 JNL_rel8                    = 0x7D
 JLE_rel8                    = 0x7E
 JNLE_rel8                   = 0x7F
+ADD_rm8_imm8                = 0x80 #1
+OR_rm8_imm8                 = 0x80 #2
+ADC_rm8_imm8                = 0x80 #3
+SBB_rm8_imm8                = 0x80 #4
+AND_rm8_imm8                = 0x80 #5
+SUB_rm8_imm8                = 0x80 #6
+XOR_rm8_imm8                = 0x80 #7
+ADD_rm1632_imm1632          = 0x81 #1
+OR_rm1632_imm1632           = 0x81 #2
+ADC_rm1632_imm1632          = 0x81 #3
+SBB_rm1632_imm1632          = 0x81 #4
+AND_rm1632_imm1632          = 0x81 #5
+SUB_rm1632_imm1632          = 0x81 #6
+XOR_rm1632_imm1632          = 0x81 #7
+ADD_rm8_imm8                = 0x82 #1   Same as 0x80
+OR_rm8_imm8                 = 0x82 #2
+ADC_rm8_imm8                = 0x82 #3
+SBB_rm8_imm8                = 0x82 #4
+AND_rm8_imm8                = 0x82 #5
+SUB_rm8_imm8                = 0x82 #6
+XOR_rm8_imm8                = 0x82 #7
+ADD_rm1632_imm8             = 0x83 #1
+OR_rm1632_imm8              = 0x83 #2
+ADC_rm1632_imm8             = 0x83 #3
+SBB_rm1632_imm8             = 0x83 #4
+AND_rm1632_imm8             = 0x83 #5
+SUB_rm1632_imm8             = 0x83 #6
+XOR_rm1632_imm8             = 0x83 #7
+TEST_rm8_r8                 = 0x84
+TEST_rm1632_r1632           = 0x85
+XCHG_r8_rm8                 = 0x86
+XCHG_r1632_rm1632           = 0x87
+MOV_rm8_r8                  = 0x88
+MOV_rm1632_r1632            = 0x89
+MOV_r8_rm8                  = 0x8A
+MOV_r1632_rm1632            = 0x8B
+MOV_m16r1632_sreg           = 0x8C
+LEA_r1632_m                 = 0x8D
+MOV_sreg_rm16               = 0x8E
+POP_rm1632                  = 0x8F
+NOP                         = 0x90
+XCHG_r1632_eax              = 0x90
+PAUSE                       = 0x90 #pfx 0xF3
+CBW                         = 0x98 #pfx 0x66
+CWDE                        = 0x98
+CWD                         = 0x99 #pfx 0x66
+CDQ                         = 0x99
+CALLF_ptr1632               = 0x9A ##############
+FWAIT                       = 0x9B
+PUSHF                       = 0x9C
+POPF                        = 0x9D
+SAHF                        = 0x9E
+LAHF                        = 0x9F
+MOV_al_moffs8               = 0xA0
+MOV_eax_moffs1632           = 0xA1
+MOV_moffs8_al               = 0xA2
+MOV_moffs1632_eax           = 0xA3
 
+"""
+#registers
 
-
+EAX = AX = AL = 0
+ECX = CX = CL = 1
+EDX = DX = DL = 2
+EBX = BX = BL = 3
+ESP = SP = AH = 4
+EBP = BP = CH = 5
+ESI = SI = DH = 6
+EDI = DI = BH = 7
+"""
 
 def main():
     print(len(pfx))
