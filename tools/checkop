@@ -1,5 +1,14 @@
-#!/bin/bash -e
+#!/bin/python 
 
-nasm -f elf32 segs.asm
+from sys import argv
+from os import system
 
-objdump -d segs.o
+if system("nasm -f elf32 " + argv[1]) != 0:
+    exit(1)
+
+argv[1] = list(argv[1])
+
+for x in range(-(argv[1].index('.') - len(argv[1]))):
+    argv[1].pop()
+
+system("objdump -d " + "".join(argv[1]) + ".o")
