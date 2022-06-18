@@ -172,22 +172,154 @@ MOV_al_moffs8               = 0xA0
 MOV_eax_moffs1632           = 0xA1
 MOV_moffs8_al               = 0xA2
 MOV_moffs1632_eax           = 0xA3
+MOVSB                       = 0xA4
+MOVSW                       = 0xA5 #pfx 0x66
+MOVSD                       = 0xA5
+CMPSB                       = 0xA6
+CMPSW                       = 0xA7 #pfx 0x66
+CMPSD                       = 0xA7
+TEST_al_imm8                = 0xA8
+TEST_eax_imm1632            = 0xA9
+STOSB                       = 0xAA
+STOSW                       = 0xAB #pfx 0x66
+STOSD                       = 0xAB
+LODSB                       = 0xAC
+LODSW                       = 0xAD #pfx 0x66
+LODSD                       = 0xAD
+SCASB                       = 0xAE
+SCASW                       = 0xAF #pfx 0x66
+SCASD                       = 0xAF
+MOV_r8_imm8                 = 0xB0
+MOV_r1632_imm1632           = 0xB8
+ROL_rm8_imm8                = 0xC0
+ROR_rm8_imm8                = 0xC0
+RCL_rm8_imm8                = 0xC0
+RCR_rm8_imm8                = 0xC0
+SHL_rm8_imm8                = 0xC0
+SHR_rm8_imm8                = 0xC0
+SAL_rm8_imm8                = 0xC0
+SAR_rm8_imm8                = 0xC0
+ROL_rm1632_imm8             = 0xC1
+ROR_rm1632_imm8             = 0xC1
+RCL_rm1632_imm8             = 0xC1
+RCR_rm1632_imm8             = 0xC1
+SHL_rm1632_imm8             = 0xC1
+SHR_rm1632_imm8             = 0xC1
+SAL_rm1632_imm8             = 0xC1
+SAR_rm1632_imm8             = 0xC1
+RET                         = 0xC2
+RET_imm16                   = 0xC3
+LES_r1632_m1632             = 0xC4
+LDS_r1632_m1632             = 0xC5
+MOV_rm8_imm8                = 0xC6
+MOV_rm1632_imm1632          = 0xC7
+ENTER_imm16_imm8            = 0xC8
+LEAVE                       = 0xC9
+RETF_imm16                  = 0xCA
+RETF                        = 0xCB
+INT3                        = 0xCC
+INT_imm16                   = 0xCD
+INTO                        = 0xCE
+IRET                        = 0xCF
+ROL_rm8_1                   = 0xD0
+ROR_rm8_1                   = 0xD0
+RCL_rm8_1                   = 0xD0
+RCR_rm8_1                   = 0xD0
+SHL_rm8_1                   = 0xD0
+SHR_rm8_1                   = 0xD0
+SAL_rm8_1                   = 0xD0
+SAR_rm8_1                   = 0xD0
+ROL_rm1632_1                = 0xD1
+ROR_rm1632_1                = 0xD1
+RCL_rm1632_1                = 0xD1
+RCR_rm1632_1                = 0xD1
+SHL_rm1632_1                = 0xD1
+SHR_rm1632_1                = 0xD1
+SAL_rm1632_1                = 0xD1
+SAR_rm1632_1                = 0xD1
+ROL_rm8_cl                  = 0xD2
+ROR_rm8_cl                  = 0xD2
+RCL_rm8_cl                  = 0xD2
+RCR_rm8_cl                  = 0xD2
+SHL_rm8_cl                  = 0xD2
+SHR_rm8_cl                  = 0xD2
+SAL_rm8_cl                  = 0xD2
+SAR_rm8_cl                  = 0xD2
+ROL_rm1632_cl               = 0xD3
+ROR_rm1632_cl               = 0xD3
+RCL_rm1632_cl               = 0xD3
+RCR_rm1632_cl               = 0xD3
+SHL_rm1632_cl               = 0xD3
+SHR_rm1632_cl               = 0xD3
+SAL_rm1632_cl               = 0xD3
+SAR_rm1632_cl               = 0xD3
+AAM_imm8                    = 0xD4
+AAD_imm8                    = 0xD5
+SALC                        = 0xD6
+XLATB                       = 0xD7
+FADD_m32real_sti            = 0xD8
+FMUL                        = 0xD8
+FCOM_st_stim32real          = 0xD8
+FCOMP_st_stim32real         = 0xD8
+FCOMP_st_st1                = 0xD8
+FSUB_m32realsti             = 0xD8
+FSUBR_m32realsti            = 0xD8
+FDIV_m32realsti             = 0xD8
+FDIVR_m32realsti            = 0xD8
+FLD_stim32real              = 0xD9
+FXCH_sti                    = 0xD9
+FST_m32real                 = 0xD9
+FNOP                        = 0xD9
+FSTP_m32real                = 0xD9
+FLDENV_m1418                = 0xD9
+FACHS                       = 0xD9
+FABS                        = 0xD9
+FTST                        = 0xD9
+FXAM                        = 0xD9
+FLDCW_m16                   = 0xD9
+FLD1                        = 0xD9
+FLDL2T                      = 0xD9
+FLDL2E                      = 0xD9
+FLDPI                       = 0xD9
+FLDLG2                      = 0xD9
+FLDLN2                      = 0xD9
+FLDZ                        = 0xD9
+FSTENV_m1428                = 0xD9 #pfx 0x9B
+FNSTENV_m1428               = 0xD9
+F2XM1                       = 0xD9
+FYL2X                       = 0xD9
+FPTAN                       = 0xD9
+FPATAN                      = 0xD9
+FXTRACT                     = 0xD9
+FPREM1                      = 0xD9
+FDECSTP                     = 0xD9
+FINCSTP                     = 0xD9
+FNSTCW_m16                  = 0xD9
+FSTCW_m16                   = 0xD9 #pfx 0x9B
+FPREM                       = 0xD9
+FYL2XP1                     = 0xD9
+FSQRT                       = 0xD9
+FSINCOS                     = 0xD9
+FRNDINT                     = 0xD9
+FSCALE                      = 0xD9
+FSIN                        = 0xD9
+FCOS                        = 0xD9
 
 """
 #registers
 
-EAX = AX = AL = 0
-ECX = CX = CL = 1
-EDX = DX = DL = 2
-EBX = BX = BL = 3
-ESP = SP = AH = 4
-EBP = BP = CH = 5
-ESI = SI = DH = 6
-EDI = DI = BH = 7
+EAX = AX = AL = ST0 = 0
+ECX = CX = CL = ST1 = 1
+EDX = DX = DL = ST2 = 2
+EBX = BX = BL = ST3 = 3
+ESP = SP = AH = ST4 = 4
+EBP = BP = CH = ST5 = 5
+ESI = SI = DH = ST6 = 6
+EDI = DI = BH = ST7 = 7
 """
 
 def main():
-    print(len(pfx))
+    print(len(globals()))
 
 if __name__ == "__main__":
     main()

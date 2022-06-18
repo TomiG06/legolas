@@ -8,18 +8,9 @@
 #define SIZE32      sizeof(uint32_t)
 #define SIZE8       sizeof(uint8_t)
 
-#define LITTLE_END  0x464c457f
-#define BIG_END     0x7f454c46
-
-enum {
-    f32 = 1,
-    f64 // Not used for the momment
-};
-
-enum {
-    little = 1,
-    big
-};
+#define MAGIC_NUM   0x464c457f
+#define X86         3
+#define F32         1
 
 char is_elf_and_32_bits(FILE* f);
 
