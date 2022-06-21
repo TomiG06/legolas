@@ -38,6 +38,10 @@ char** extract_sheaders(Elf32_Ehdr* elf_h, FILE* f) {
     section_headers++;
     for(size_t i = 0; i < elf_h->e_shnum; i++) {
         sh[i] = (char*) malloc(strlen(section_headers));
+        if(!sh[i]) {
+            printf("Malloc failed\n");
+            exit(1);
+        }
         strncpy(sh[i], section_headers, strlen(section_headers));
         if(startswith(sh[i], ".text")) {
             /*
