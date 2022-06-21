@@ -1,17 +1,11 @@
 #ifndef MIDDLEWARE_H
 #define MIDDLEWARE_H
 
-#include <stdint.h>
-#include <stdlib.h>
-#include <stdio.h>
+#include <elf.h>
 
-#define SIZE32      sizeof(uint32_t)
-#define SIZE8       sizeof(uint8_t)
+#define MAG_N  0x464c457f
 
-#define MAGIC_NUM   0x464c457f
-#define X86         3
-#define F32         1
+char is_elf_32_x86(Elf32_Ehdr* h);
 
-char is_elf_and_32_bits(FILE* f);
 
 #endif

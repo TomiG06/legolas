@@ -58,6 +58,7 @@ with open(argv[1], "rb") as f:
         "addr": 32,
         "seg": None,
         "rep": False,
+        "repn": False,
         "lock": False,
         
         "opc": None,
@@ -75,8 +76,10 @@ with open(argv[1], "rb") as f:
                 inst["op"] = 16
             elif text[b] == ADDR_SIZE:
                 inst["addr"] = 16
-            elif text[b] == REPEAT:
+            elif text[b] == REP_REPE:
                 inst["rep"] = True
+            elif text[b] == REPNE:
+                inst["repn"] = True
             elif text[b] == LOCK:
                 inst["lock"] = True
             elif text[b] in sgmnt_ovrd:
