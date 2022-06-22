@@ -47,21 +47,15 @@ int main(int argc, char* argv[]) {
     }
 
     char** sh = extract_sheaders(hdr, f);
+    int16_t text_index = shindexof(".text", sh, hdr);
 
     uint32_t text_loc, text_size;
     
-    fseek(f, SEQ_EL(DotText), SEEK_SET);
+    fseek(f, SEQ_EL(text_index), SEEK_SET);
     fread(&text_loc, sizeof(uint32_t), 1, f);
     fread(&text_size, sizeof(uint32_t), 1, f);
 
     fseek(f, text_loc, SEEK_SET);
-
-    uint32_t buff;
-
-    for(int x = 0; x < text_size; x += 4) {
-        fread(&buff, sizeof(uint32_t), 1, f);
-        printf("%x\n", buff);
-    }
 
     fclose(f);
     return 0;
