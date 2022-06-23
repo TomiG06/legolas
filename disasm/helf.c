@@ -7,8 +7,6 @@
 #include <elf.h>
 #include "helf.h"
 
-int16_t DotText = -1;
-
 char startswith(char* a, char* b) {
     if(strlen(a) < strlen(b)) return 0;
     for(size_t i = 0; i < strlen(b); i++) {

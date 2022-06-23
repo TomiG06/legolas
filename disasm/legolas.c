@@ -1,10 +1,9 @@
 #include <stdio.h>
-#include <string.h>
 #include <stdint.h>
+#include <string.h>
 #include <unistd.h>
 #include <elf.h>
 #include "legolas.h"
-#include "middleware.h"
 #include "helf.h"
 
 Elf32_Ehdr* elf_header(FILE* f) {
@@ -26,6 +25,8 @@ Elf32_Ehdr* elf_header(FILE* f) {
     return &hdr;
 }
 
+static const char magic_num[] = {ELFMAG0, ELFMAG1, ELFMAG2, ELFMAG3};
+
 int main(int argc, char* argv[]) {
     if(argc == 1) {
         printf("No input file\n");
@@ -41,8 +42,28 @@ int main(int argc, char* argv[]) {
 
     Elf32_Ehdr* hdr = elf_header(f);
 
-    if(!is_elf_32_x86(hdr)) {
+
+    //Check if file is ELF
+    if(strncmp(magic_num, hdr->e_ident, sizeof(magic_num))) {
         printf("File '%s' is not ELF\n", argv[1]);
+        return 1;
+    }
+
+    //Check if ELF file is target ABI is System V (Linux outputs the same, at least Ubuntu)
+    if(hdr->e_ident[EI_OSABI]) {
+        printf("File's target ABI is not System V\n");
+        return 1;
+    }
+
+    //Check if ELF file's target is i386
+    if(hdr->e_machine != EM_386) {
+        printf("File '%s' is not compatible with i386\n", argv[1]);
+        return 1;
+    }
+
+    //Check if ELF file is 32-bit format
+    if(hdr->e_ident[EI_CLASS] != ELFCLASS32) {
+        printf("File '%s' is not 32-bit\n", argv[1]);
         return 1;
     }
 
