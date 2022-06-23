@@ -7,18 +7,18 @@
 #include <elf.h>
 #include "helf.h"
 
-char startswith(char* a, char* b) {
-    if(strlen(a) < strlen(b)) return 0;
-    for(size_t i = 0; i < strlen(b); i++) {
-        if(a[i] != b[i]) return 0;
-    }
+/*
+    The function below returns a string array
+    of the section headers
 
-    return 1;
-}
-
+    It first finds the location and size of
+    the section header table, it then reads the
+    contents of it and finally stores them in
+    a string array
+*/
 char** extract_sheaders(Elf32_Ehdr* elf_h, FILE* f) {
     uint32_t sh_loc, sh_size;
-    fseek(f, SEQ_EL(elf_h->e_shstrndx), SEEK_SET);
+    fseek(f, START + (elf_h->e_shstrndx-1) * 40, SEEK_SET);
     fread(&sh_loc, sizeof(uint32_t), 1, f);
     fread(&sh_size, sizeof(uint32_t), 1, f);
     char* section_headers = (char*) malloc(sh_size);
@@ -46,12 +46,12 @@ char** extract_sheaders(Elf32_Ehdr* elf_h, FILE* f) {
     }
 
     return sh;
-
 }
 
+//This function returns the index of a section, or -1 if the section does not exist
 int16_t shindexof(char* str, char** sh, Elf32_Ehdr* hdr) {
     for(int16_t x = 0; x < hdr->e_shnum; x++) {
-        if(startswith(str, sh[x])) return x+1;
+        if(!strcmp(str, sh[x])) return x;
     }
     return -1;
 }

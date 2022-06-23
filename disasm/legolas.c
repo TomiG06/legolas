@@ -49,7 +49,7 @@ int main(int argc, char* argv[]) {
         return 1;
     }
 
-    //Check if ELF file is target ABI is System V (Linux outputs the same, at least Ubuntu)
+    //Check if ELF file's target ABI is System V (Linux outputs the same, at least Ubuntu does)
     if(hdr->e_ident[EI_OSABI]) {
         printf("File's target ABI is not System V\n");
         return 1;
@@ -61,7 +61,7 @@ int main(int argc, char* argv[]) {
         return 1;
     }
 
-    //Check if ELF file is 32-bit format
+    //Check if ELF file is in 32-bit format
     if(hdr->e_ident[EI_CLASS] != ELFCLASS32) {
         printf("File '%s' is not 32-bit\n", argv[1]);
         return 1;
@@ -69,6 +69,11 @@ int main(int argc, char* argv[]) {
 
     char** sh = extract_sheaders(hdr, f);
     int16_t text_index = shindexof(".text", sh, hdr);
+
+    if(text_index < 0) {
+        printf(".text section not found\n");
+        return 1;
+    }
 
     uint32_t text_loc, text_size;
     
