@@ -5,6 +5,7 @@
 #include <elf.h>
 #include "legolas.h"
 #include "helf.h"
+#include "disasm.h"
 
 Elf32_Ehdr* elf_header(FILE* f) {
     static Elf32_Ehdr hdr;
@@ -82,6 +83,8 @@ int main(int argc, char* argv[]) {
     fread(&text_size, sizeof(uint32_t), 1, f);
 
     fseek(f, text_loc, SEEK_SET);
+
+    start_disassembly(f, text_size);
 
     fclose(f);
     return 0;

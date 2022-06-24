@@ -6,6 +6,7 @@
 #include <string.h>
 #include <elf.h>
 #include "helf.h"
+#include "helpers.h"
 
 /*
     The function below returns a string array
@@ -16,6 +17,7 @@
     contents of it and finally stores them in
     a string array
 */
+
 char** extract_sheaders(Elf32_Ehdr* elf_h, FILE* f) {
     uint32_t sh_loc, sh_size;
     fseek(f, START + (elf_h->e_shstrndx-1) * 40, SEEK_SET);
@@ -24,10 +26,7 @@ char** extract_sheaders(Elf32_Ehdr* elf_h, FILE* f) {
     char* section_headers = (char*) malloc(sh_size);
     char** sh = (char**) malloc(elf_h->e_shnum * sizeof(char*));
 
-    if(!section_headers || !sh) {
-        printf("Malloc failed\n");
-        exit(1);
-    }
+    if(!section_headers || !sh) malloc_fail_and_exit();
 
     fseek(f, sh_loc, SEEK_SET);
 
@@ -36,10 +35,7 @@ char** extract_sheaders(Elf32_Ehdr* elf_h, FILE* f) {
     section_headers++;
     for(size_t i = 0; i < elf_h->e_shnum; i++) {
         sh[i] = (char*) calloc(strlen(section_headers), 1);
-        if(!sh[i]) {
-            printf("Malloc failed\n");
-            exit(1);
-        }
+        if(!sh[i]) malloc_fail_and_exit();
         strcpy(sh[i], section_headers);
         while(*section_headers) section_headers++;
         section_headers++;
