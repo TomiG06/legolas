@@ -57,6 +57,8 @@ void mod_rm(uint8_t* byte, struct instr* inst) {
     inst->mrm.rm  = *byte & 7;
 }
 
+void set_mn(struct instr* i, char* mnemonic) { strcpy(i->mnemonic, mnemonic); }
+
 void rm81632_r81632(FILE* f, char* mnemonic, uint8_t rm8_r8_op, struct instr* inst) {
     if(inst->opcode == rm8_r8_op) {
         inst->op = 8;
@@ -64,7 +66,7 @@ void rm81632_r81632(FILE* f, char* mnemonic, uint8_t rm8_r8_op, struct instr* in
     } else if(inst->op == 16) inst->addr = 16;
 
     uint8_t* buff = read_b(f, 1);
-    strcpy(inst->mnemonic, mnemonic);
+    set_mn(inst, mnemonic);
     strcpy(inst->descr_opers, "rm_r");
     mod_rm(buff, inst);
 
@@ -86,7 +88,7 @@ void r81632_rm81632(FILE* f, char* mnemonic, uint8_t r8_rm8_op, struct instr* in
     uint8_t* buff = read_b(f, 1);
     mod_rm(buff, inst);
 
-    strcpy(inst->mnemonic, mnemonic);
+    set_mn(inst, mnemonic);
     strcpy(inst->descr_opers, "r_rm");
 
     if(inst->opcode == r8_rm8_op) {
@@ -94,14 +96,13 @@ void r81632_rm81632(FILE* f, char* mnemonic, uint8_t r8_rm8_op, struct instr* in
         inst->addr = 8;
     } else if(inst->op == 16) inst->addr = 16;
 
-    inst->oper2 = inst->mrm.reg;
-    inst->oper1 = (uint32_t)*read_b(f, 4);
+    inst->oper1 = inst->mrm.reg;
+    inst->oper2 = (uint32_t)*read_b(f, 4);
 
     free(buff);
 }
 
 void set_instruction(FILE* f, struct instr* inst) {
-    uint8_t* buff;
     switch(inst->opcode) {
         case ADD_rm8_r8:
         case ADD_rm1632_r1632:
@@ -145,7 +146,7 @@ void start_disassembly(FILE* f, uint32_t text_size) {
         instruction.opcode = *opc;
         free(opc);
         set_instruction(f, &instruction);
-//        printf("%d %s %d %d %s\n", instruction.op, instruction.mnemonic, instruction.oper1, instruction.oper2, instruction.descr_opers);
+        //printf("%d %s 0x%x 0x%x %s\n", instruction.op, instruction.mnemonic, instruction.oper1, instruction.oper2, instruction.descr_opers);
 
         //These functions are to be built
         //print_instr(&instruction);
