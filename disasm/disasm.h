@@ -3,6 +3,12 @@
 
 #include <stdint.h>
 
+struct modrm {
+    uint8_t mod:2;
+    uint8_t reg:3;
+    uint8_t rm:3;
+};
+
 struct instr {
     uint8_t op;
     uint8_t addr;
@@ -13,13 +19,13 @@ struct instr {
 
     uint8_t extended;
 
-    uint8_t mod;
-    uint8_t rm;
-    uint8_t reg;
+    struct modrm mrm;
+
+    uint8_t isoper1seg;
+    char descr_opers[32];
 
     uint8_t opcode;
     char mnemonic[16]; //it isn't that long
-    uint8_t opernum;
     uint32_t oper1;
     uint32_t oper2;
     uint32_t oper3;
