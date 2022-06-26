@@ -19,8 +19,9 @@ char contained(uint8_t el, uint8_t arr[], const size_t size) {
 }
 
 uint8_t set_prefixes(FILE* f, struct instr* inst) {
-    uint32_t pfx;
+    uint32_t pfx = 0;
     read_b(f, 1, &pfx);
+    printf("Pfx: %x\n", pfx);
     //if 'pfx' is not contained in prefixes, this means that 'pfx' is an opcode
     while(contained(pfx, prefixes, pfx_size)) {
         switch(pfx) {
@@ -101,6 +102,17 @@ void r81632_rm81632(FILE* f, char* mnemonic, uint8_t r8_rm8_op, struct instr* in
     read_b(f, 4, &inst->oper2);
 }
 
+void smth_aleax(FILE* f, char* mnemonic, uint8_t imm8, struct instr* inst) {
+    inst->oper1 = eax;
+    set_mn(inst, mnemonic);
+    strcpy(inst->descr_opers, "ra_imm");
+
+    if(inst->opcode == imm8) inst->op = 8;
+
+    read_b(f, inst->op/8, &inst->oper2);
+    printf("%d %x\n", inst->op, inst->oper2);
+}
+
 void set_instruction(FILE* f, struct instr* inst) {
     switch(inst->opcode) {
         case ADD_rm8_r8:
@@ -111,8 +123,10 @@ void set_instruction(FILE* f, struct instr* inst) {
         case ADD_r1632_rm1632:
             r81632_rm81632(f, "add", ADD_r8_rm8, inst);
             break;
-//        case ADD_al_imm8:
-//        case ADD_eax_imm1632:
+        case ADD_al_imm8:
+        case ADD_eax_imm1632:
+            smth_aleax(f, "add", ADD_al_imm8, inst);
+            break;
         case PUSH_es:
         case POP_es:
             strcpy(inst->mnemonic, inst->opcode == POP_es ? "pop" : "push");
@@ -127,8 +141,10 @@ void set_instruction(FILE* f, struct instr* inst) {
         case OR_r1632_rm1632:
             r81632_rm81632(f, "or", OR_r8_rm8, inst);
             break;
-//        case OR_al_imm8:
-//        case OR_eax_imm1632:
+        case OR_al_imm8:
+        case OR_eax_imm1632:
+            smth_aleax(f, "or", OR_al_imm8, inst);
+            break;
         case PUSH_cs:
             strcpy(inst->mnemonic, "push");
             inst->isoper1seg = 1;
@@ -143,7 +159,7 @@ void start_disassembly(FILE* f, uint32_t text_size) {
         
         instruction.opcode = set_prefixes(f, &instruction);
         set_instruction(f, &instruction);
-        printf("%d %s %d %d\n", instruction.op, instruction.mnemonic, instruction.oper1, instruction.oper2);
+        printf("%d %s %u %u\n", instruction.op, instruction.mnemonic, instruction.oper1, instruction.oper2);
 
         //These functions are to be built
         //print_instr(&instruction);
