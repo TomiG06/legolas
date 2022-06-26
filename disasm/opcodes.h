@@ -115,13 +115,15 @@
 #define AND_rm1632_imm1632          0x81
 #define SUB_rm1632_imm1632          0x81
 #define XOR_rm1632_imm1632          0x81
-#define ADD_rm8_imm8                0x82
-#define OR_rm8_imm8                 0x82
-#define ADC_rm8_imm8                0x82
+/*
+#define ADD_rm8_imm8                0x82    For some reason
+#define OR_rm8_imm8                 0x82    these opcodes are
+#define ADC_rm8_imm8                0x82    the same as 0x80
 #define SBB_rm8_imm8                0x82
 #define AND_rm8_imm8                0x82
 #define SUB_rm8_imm8                0x82
 #define XOR_rm8_imm8                0x82
+*/
 #define ADD_rm1632_imm8             0x83
 #define OR_rm1632_imm8              0x83
 #define ADC_rm1632_imm8             0x83
