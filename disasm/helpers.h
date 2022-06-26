@@ -7,6 +7,6 @@
 extern uint32_t counter;
 
 void malloc_fail_and_exit();
-char* read_b(FILE* f, uint32_t nb);
+void read_b(FILE* f, uint8_t nb, uint32_t* ptr);
 
 #endif

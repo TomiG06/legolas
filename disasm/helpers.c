@@ -11,11 +11,8 @@ void malloc_fail_and_exit() {
 }
 
 //custom fread in order to also keep track of the bytes
-uint8_t* read_b(FILE* f, uint32_t nb) {
-    uint8_t* ret = (uint8_t*) malloc(nb);
-    if(!ret) malloc_fail_and_exit();
-    fread(ret, nb, 1, f);
+void read_b(FILE* f, uint8_t nb, uint32_t* ptr) {
+    fread(ptr, nb, 1, f);
     counter += nb;
-    return ret;
 }
 

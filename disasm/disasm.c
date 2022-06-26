@@ -18,11 +18,12 @@ char contained(uint8_t el, uint8_t arr[], const size_t size) {
     return 0;
 }
 
-uint8_t* set_prefixes(FILE* f, struct instr* inst) {
-    uint8_t* pfx = read_b(f, 1);
+uint8_t set_prefixes(FILE* f, struct instr* inst) {
+    uint32_t pfx;
+    read_b(f, 1, &pfx);
     //if 'pfx' is not contained in prefixes, this means that 'pfx' is an opcode
-    while(contained(*pfx, prefixes, pfx_size)) {
-        switch(*pfx) {
+    while(contained(pfx, prefixes, pfx_size)) {
+        switch(pfx) {
             case OP_SIZE:
                 inst->op = 16;
                 break;
@@ -41,14 +42,14 @@ uint8_t* set_prefixes(FILE* f, struct instr* inst) {
             case EXTENDED:
                 inst->extended = 1;
             default:
-                inst->seg = *pfx;
+                inst->seg = pfx;
                 break;
         }
 
-        pfx = read_b(f, 1);
+        read_b(f, 1, &pfx);
     }
 
-    return pfx;
+    return (uint8_t)pfx;
 }
 
 void mod_rm(uint8_t* byte, struct instr* inst) {
@@ -65,28 +66,28 @@ void rm81632_r81632(FILE* f, char* mnemonic, uint8_t rm8_r8_op, struct instr* in
         inst->addr = 8;
     } else if(inst->op == 16) inst->addr = 16;
 
-    uint8_t* buff = read_b(f, 1);
+    uint32_t buff;
+    read_b(f, 1, &buff);
     set_mn(inst, mnemonic);
     strcpy(inst->descr_opers, "rm_r");
-    mod_rm(buff, inst);
+    mod_rm((uint8_t*)&buff, inst);
 
     switch(inst->mrm.mod) {
         case 0:
             inst->oper1 = inst->mrm.reg;
-            inst->oper2 = (uint32_t)*read_b(f, 4);
+            read_b(f, 4, &inst->oper2);
             break;
         case 3:
             inst->oper1 = inst->mrm.rm;
             inst->oper2 = inst->mrm.reg;
             break;
     }
-
-    free(buff);
 }
 
 void r81632_rm81632(FILE* f, char* mnemonic, uint8_t r8_rm8_op, struct instr* inst) {
-    uint8_t* buff = read_b(f, 1);
-    mod_rm(buff, inst);
+    uint32_t buff;
+    read_b(f, 1, &buff);
+    mod_rm((uint8_t*)&buff, inst);
 
     set_mn(inst, mnemonic);
     strcpy(inst->descr_opers, "r_rm");
@@ -97,9 +98,7 @@ void r81632_rm81632(FILE* f, char* mnemonic, uint8_t r8_rm8_op, struct instr* in
     } else if(inst->op == 16) inst->addr = 16;
 
     inst->oper1 = inst->mrm.reg;
-    inst->oper2 = (uint32_t)*read_b(f, 4);
-
-    free(buff);
+    read_b(f, 4, &inst->oper2);
 }
 
 void set_instruction(FILE* f, struct instr* inst) {
@@ -139,14 +138,12 @@ void set_instruction(FILE* f, struct instr* inst) {
 }
 
 void start_disassembly(FILE* f, uint32_t text_size) {
-    uint8_t* opc;
     while(counter < text_size) {
         struct instr instruction = {32, 32, 0, 0, 0, 0, 0, 0, 0, 0};
-        opc = set_prefixes(f, &instruction);
-        instruction.opcode = *opc;
-        free(opc);
+        
+        instruction.opcode = set_prefixes(f, &instruction);
         set_instruction(f, &instruction);
-        //printf("%d %s 0x%x 0x%x %s\n", instruction.op, instruction.mnemonic, instruction.oper1, instruction.oper2, instruction.descr_opers);
+        printf("%d %s %d %d\n", instruction.op, instruction.mnemonic, instruction.oper1, instruction.oper2);
 
         //These functions are to be built
         //print_instr(&instruction);
