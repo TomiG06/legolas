@@ -21,7 +21,6 @@ char contained(uint8_t el, uint8_t arr[], const size_t size) {
 uint8_t set_prefixes(FILE* f, struct instr* inst) {
     uint32_t pfx = 0;
     read_b(f, 1, &pfx);
-    printf("Pfx: %x\n", pfx);
     //if 'pfx' is not contained in prefixes, this means that 'pfx' is an opcode
     while(contained(pfx, prefixes, pfx_size)) {
         switch(pfx) {
@@ -110,7 +109,6 @@ void smth_aleax(FILE* f, char* mnemonic, uint8_t imm8, struct instr* inst) {
     if(inst->opcode == imm8) inst->op = 8;
 
     read_b(f, inst->op/8, &inst->oper2);
-    printf("%d %x\n", inst->op, inst->oper2);
 }
 
 void set_instruction(FILE* f, struct instr* inst) {
