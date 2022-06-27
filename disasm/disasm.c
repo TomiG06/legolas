@@ -127,7 +127,7 @@ void set_instruction(FILE* f, struct instr* inst) {
             break;
         case PUSH_es:
         case POP_es:
-            strcpy(inst->mnemonic, inst->opcode == POP_es ? "pop" : "push");
+            set_mn(inst, inst->opcode == POP_es ? "pop" : "push");
             inst->isoper1seg = 1;
             inst->oper1 = SEG_ES;
             break;
@@ -144,9 +144,45 @@ void set_instruction(FILE* f, struct instr* inst) {
             smth_aleax(f, "or", OR_al_imm8, inst);
             break;
         case PUSH_cs:
-            strcpy(inst->mnemonic, "push");
+            set_mn(inst, "push");
             inst->isoper1seg = 1;
             inst->oper1 = SEG_ES;
+            break;
+        case ADC_rm8_r8:
+        case ADC_rm1632_r1632:
+            rm81632_r81632(f, "adc", ADC_rm8_r8, inst);
+            break;
+        case ADC_r8_rm8:
+        case ADC_r1632_rm1632:
+            r81632_rm81632(f, "adc", ADC_rm8_r8, inst);
+            break;
+        case ADC_al_imm8:
+        case ADC_eax_imm1632:
+            smth_aleax(f, "adc", ADC_al_imm8, inst);
+            break;
+        case PUSH_ss:
+        case POP_ss:
+            set_mn(inst, inst->opcode == POP_ss? "pop": "push");
+            inst->isoper1seg = 1;
+            inst->oper1 = SEG_SS;
+            break;
+        case SBB_rm8_r8:
+        case SBB_rm1632_r1632:
+            rm81632_r81632(f, "sbb", SBB_rm8_r8, inst);
+            break;
+        case SBB_r8_rm8:
+        case SBB_r1632_rm1632:
+            r81632_rm81632(f, "sbb", SBB_r8_rm8, inst);
+            break;
+        case SBB_al_imm8:
+        case SBB_eax_imm1632:
+            smth_aleax(f, "sbb", SBB_al_imm8, inst);
+            break;
+        case PUSH_ds:
+        case POP_ds:
+            set_mn(inst, inst->opcode == POP_ds ? "pop" : "push");
+            inst->isoper1seg = 1;
+            inst->oper1 = SEG_DS;
             break;
     }
 }
@@ -163,3 +199,4 @@ void start_disassembly(FILE* f, uint32_t text_size) {
         //print_instr(&instruction);
     }
 }
+
