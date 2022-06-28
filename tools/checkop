@@ -3,6 +3,10 @@
 from sys import argv
 from os import system
 
+if len(argv) != 2:
+    print(f"usage: {argv[0]} <filename>")
+    exit(1)
+
 if system("nasm -f elf32 " + argv[1]) != 0:
     exit(1)
 
@@ -11,4 +15,4 @@ argv[1] = list(argv[1])
 for x in range(-(argv[1].index('.') - len(argv[1]))):
     argv[1].pop()
 
-system("objdump -d " + "".join(argv[1]) + ".o")
+system("objdump -d " + "".join(argv[1]) + ".o -M intel")
