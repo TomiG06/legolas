@@ -111,6 +111,13 @@ void smth_aleax(FILE* f, char* mnemonic, uint8_t imm8, struct instr* inst) {
     read_b(f, inst->op/8, &inst->oper2);
 }
 
+//Stuck instructions used with seg registers
+void stack_seg(struct instr* inst, char* mnemonic, uint8_t seg) {
+    set_mn(inst, mnemonic);
+    inst->isoper1seg = 1;
+    inst->oper1 = seg;
+}
+
 void set_instruction(FILE* f, struct instr* inst) {
     switch(inst->opcode) {
         case ADD_rm8_r8:
@@ -127,9 +134,7 @@ void set_instruction(FILE* f, struct instr* inst) {
             break;
         case PUSH_es:
         case POP_es:
-            set_mn(inst, inst->opcode == POP_es ? "pop" : "push");
-            inst->isoper1seg = 1;
-            inst->oper1 = SEG_ES;
+            stack_seg(inst, inst->opcode == POP_es ? "pop" : "push", SEG_ES);
             break;
         case OR_rm8_r8:
         case OR_rm1632_r1632:
@@ -144,9 +149,7 @@ void set_instruction(FILE* f, struct instr* inst) {
             smth_aleax(f, "or", OR_al_imm8, inst);
             break;
         case PUSH_cs:
-            set_mn(inst, "push");
-            inst->isoper1seg = 1;
-            inst->oper1 = SEG_ES;
+            stack_seg(inst, "push", SEG_CS);
             break;
         case ADC_rm8_r8:
         case ADC_rm1632_r1632:
@@ -162,9 +165,7 @@ void set_instruction(FILE* f, struct instr* inst) {
             break;
         case PUSH_ss:
         case POP_ss:
-            set_mn(inst, inst->opcode == POP_ss? "pop": "push");
-            inst->isoper1seg = 1;
-            inst->oper1 = SEG_SS;
+            stack_seg(inst, inst->opcode == POP_ss? "pop": "push", SEG_SS);
             break;
         case SBB_rm8_r8:
         case SBB_rm1632_r1632:
@@ -180,9 +181,7 @@ void set_instruction(FILE* f, struct instr* inst) {
             break;
         case PUSH_ds:
         case POP_ds:
-            set_mn(inst, inst->opcode == POP_ds ? "pop" : "push");
-            inst->isoper1seg = 1;
-            inst->oper1 = SEG_DS;
+            stack_seg(inst, inst->opcode == POP_ds ? "pop" : "push", SEG_DS);
             break;
     }
 }
