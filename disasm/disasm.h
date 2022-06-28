@@ -22,14 +22,12 @@ struct instr {
     struct modrm mrm;
 
     uint8_t isoper1seg;
+    uint8_t opernum;
     char descr_opers[32];
 
     uint8_t opcode;
     char mnemonic[16]; //it isn't that long
-    uint32_t oper1;
-    uint32_t oper2;
-    uint32_t oper3;
-    uint32_t oper4;
+    uint32_t operands[4];
 };
 
 void start_disassembly(FILE* f, uint32_t text_size);

@@ -1,5 +1,3 @@
-//Help + elf = Helf XD
-
 #include <stdio.h>
 #include <stdint.h>
 #include <stdlib.h>

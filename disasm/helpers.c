@@ -2,6 +2,10 @@
 #include <stdlib.h>
 #include <stdint.h>
 
+/*
+    We are using it because we want to keep track of the bytes read so that
+    they will not exceed the size of the .text section
+*/
 uint32_t counter = 0;
 
 //Used a lot
