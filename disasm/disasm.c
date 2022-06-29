@@ -4,7 +4,6 @@
 #include <string.h>
 #include "disasm.h"
 #include "opcodes.h"
-#include "registers.h"
 #include "helpers.h"
 
 static uint8_t prefixes[] = {OP_SIZE, ADDR_SIZE, REP_REPE, REPNE, LOCK, SEG_ES, SEG_CS, SEG_SS, SEG_DS, SEG_FS, SEG_GS, EXTENDED};
@@ -62,6 +61,7 @@ void mod_rm(uint8_t* byte, struct instr* inst) {
 }
 
 void set_mn(struct instr* i, char* mnemonic) { strcpy(i->mnemonic, mnemonic); }
+void set_desc(struct instr* i, char* description) { strcpy(i->descr_opers, description); }
 
 void rm81632_r81632(FILE* f, char* mnemonic, uint8_t rm8_r8_op, struct instr* inst) {
     if(inst->opcode == rm8_r8_op) {
@@ -74,15 +74,16 @@ void rm81632_r81632(FILE* f, char* mnemonic, uint8_t rm8_r8_op, struct instr* in
     uint32_t buff;
     read_b(f, 1, &buff);
     set_mn(inst, mnemonic);
-    strcpy(inst->descr_opers, "rm_r");
     mod_rm((uint8_t*)&buff, inst);
 
     switch(inst->mrm.mod) {
         case 0:
+            set_desc(inst, "r_m");
             inst->operands[0] = inst->mrm.reg;
             read_b(f, 4, &inst->operands[1]);
             break;
         case 3:
+            set_desc(inst, "r_r");
             inst->operands[0] = inst->mrm.rm;
             inst->operands[1] = inst->mrm.reg;
             break;
@@ -96,7 +97,7 @@ void r81632_rm81632(FILE* f, char* mnemonic, uint8_t r8_rm8_op, struct instr* in
     inst->opernum = 2;
 
     set_mn(inst, mnemonic);
-    strcpy(inst->descr_opers, "r_rm");
+    set_desc(inst, "r_m");
 
     if(inst->opcode == r8_rm8_op) {
         inst->op = 8;
@@ -111,7 +112,7 @@ void smth_aleax(FILE* f, char* mnemonic, uint8_t imm8, struct instr* inst) {
     inst->operands[0] = eax;
     inst->opernum = 2;
     set_mn(inst, mnemonic);
-    strcpy(inst->descr_opers, "r_imm");
+    set_desc(inst, "r_imm");
 
     if(inst->opcode == imm8) inst->op = 8;
 
@@ -121,8 +122,7 @@ void smth_aleax(FILE* f, char* mnemonic, uint8_t imm8, struct instr* inst) {
 //Stuck instructions used with seg registers
 void stack_seg(struct instr* inst, char* mnemonic, uint8_t seg) {
     set_mn(inst, mnemonic);
-    strcpy(inst->descr_opers, "seg");
-    inst->isoper1seg = 1;
+    set_desc(inst, "seg");
     inst->operands[0] = seg;
     inst->opernum = 1;
 }
@@ -192,6 +192,67 @@ void set_instruction(FILE* f, struct instr* inst) {
         case POP_ds:
             stack_seg(inst, inst->opcode == POP_ds ? "pop" : "push", SEG_DS);
             break;
+        case AND_rm8_r8:
+        case AND_rm1632_r1632:
+            rm81632_r81632(f, "and", AND_rm8_r8, inst);
+            break;
+        case AND_r8_rm8:
+        case AND_r1632_rm1632:
+            r81632_rm81632(f, "and", AND_r8_rm8, inst);
+            break;
+        case AND_al_imm8:
+        case AND_eax_imm1632:
+            smth_aleax(f, "and", AND_al_imm8, inst);
+            break;
+        case DAA:
+            set_mn(inst, "daa");
+            break;
+
+        case SUB_rm8_r8:
+        case SUB_rm1632_r1632:
+            rm81632_r81632(f, "sub", SUB_rm8_r8, inst);
+            break;
+        case SUB_r8_rm8:
+        case SUB_r1632_rm1632:
+            r81632_rm81632(f, "sub", SUB_r8_rm8, inst);
+            break;
+        case SUB_al_imm8:
+        case SUB_eax_imm1632:
+            smth_aleax(f, "sub", SUB_al_imm8, inst);
+            break;
+        case DAS:
+            set_mn(inst, "das");
+            break;
+        case XOR_rm8_r8:
+        case XOR_rm1632_r1632:
+            rm81632_r81632(f, "xor", XOR_rm8_r8, inst);
+            break;
+        case XOR_r8_rm8:
+        case XOR_r1632_rm1632:
+            r81632_rm81632(f, "xor", XOR_r8_rm8, inst);
+            break;
+        case XOR_al_imm8:
+        case XOR_eax_imm1632:
+            smth_aleax(f, "xor", XOR_al_imm8, inst);
+            break;
+        case AAA:
+            set_mn(inst, "aaa");
+            break;
+        case CMP_rm8_r8:
+        case CMP_rm1632_r1632:
+            rm81632_r81632(f, "cmp", CMP_rm8_r8, inst);
+            break;
+        case CMP_r8_rm8:
+        case CMP_r1632_rm1632:
+            r81632_rm81632(f, "cmp", CMP_r8_rm8, inst);
+            break;
+        case CMP_al_imm8:
+        case CMP_eax_imm1632:
+            smth_aleax(f, "cmp", CMP_al_imm8, inst);
+            break;
+        case AAS:
+            set_mn(inst, "aas");
+            break;
     }
 }
 
@@ -201,7 +262,7 @@ void start_disassembly(FILE* f, uint32_t text_size) {
         
         instruction.opcode = set_prefixes(f, &instruction);
         set_instruction(f, &instruction);
-        printf("%d %s %u %u\n", instruction.op, instruction.mnemonic, instruction.oper1, instruction.oper2);
+        printf("%d %s %u %u\n", instruction.op, instruction.mnemonic, instruction.operands[0], instruction.operands[1]);
         //print_instr(&instruction);
     }
 }

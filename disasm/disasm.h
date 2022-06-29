@@ -3,6 +3,17 @@
 
 #include <stdint.h>
 
+/*
+    r
+    m
+    imm
+    seg
+    rel
+    ptr
+    moffs
+    sti
+*/
+
 struct modrm {
     uint8_t mod:2;
     uint8_t reg:3;
@@ -21,7 +32,6 @@ struct instr {
 
     struct modrm mrm;
 
-    uint8_t isoper1seg;
     uint8_t opernum;
     char descr_opers[32];
 
