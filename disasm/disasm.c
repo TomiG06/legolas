@@ -253,40 +253,39 @@ void set_instruction(FILE* f, struct instr* inst) {
         case AAS:
             set_mn(inst, "aas");
             break;
-
         case INC_r1632 + eax:
         case INC_r1632 + ecx:
-	    case INC_r1632 + edx:
-    	case INC_r1632 + ebx:
-	    case INC_r1632 + esp:
-    	case INC_r1632 + ebp:
-	    case INC_r1632 + esi:
-	    case INC_r1632 + edi:
-		case DEC_r1632 + eax:
-		case DEC_r1632 + ecx:
-		case DEC_r1632 + edx:
-		case DEC_r1632 + ebx:
-		case DEC_r1632 + esp:
-		case DEC_r1632 + ebp:
-		case DEC_r1632 + esi:
-		case DEC_r1632 + edi:
-		case PUSH_r1632 + eax:
-		case PUSH_r1632 + ecx:
-		case PUSH_r1632 + edx:
-		case PUSH_r1632 + ebx:
-		case PUSH_r1632 + esp:
-		case PUSH_r1632 + ebp:
-		case PUSH_r1632 + esi:
-		case PUSH_r1632 + edi:
-		case POP_r1632 + eax:
-		case POP_r1632 + ecx:
-		case POP_r1632 + edx:
-		case POP_r1632 + ebx:
-		case POP_r1632 + esp:
-		case POP_r1632 + ebp:
-		case POP_r1632 + esi:
-		case POP_r1632 + edi:
-            
+        case INC_r1632 + edx:
+        case INC_r1632 + ebx:
+        case INC_r1632 + esp:
+        case INC_r1632 + ebp:
+        case INC_r1632 + esi:
+        case INC_r1632 + edi:
+        case DEC_r1632 + eax:
+        case DEC_r1632 + ecx:
+        case DEC_r1632 + edx:
+        case DEC_r1632 + ebx:
+        case DEC_r1632 + esp:
+        case DEC_r1632 + ebp:
+        case DEC_r1632 + esi:
+        case DEC_r1632 + edi:
+        case PUSH_r1632 + eax:
+        case PUSH_r1632 + ecx:
+        case PUSH_r1632 + edx:
+        case PUSH_r1632 + ebx:
+        case PUSH_r1632 + esp:
+        case PUSH_r1632 + ebp:
+        case PUSH_r1632 + esi:
+        case PUSH_r1632 + edi:
+        case POP_r1632 + eax:
+        case POP_r1632 + ecx:
+        case POP_r1632 + edx:
+        case POP_r1632 + ebx:
+        case POP_r1632 + esp:
+        case POP_r1632 + ebp:
+        case POP_r1632 + esi:
+        case POP_r1632 + edi:
+           
             inst->opernum = 1;
             inst->operands[0] = inst->opcode & 7;
 
@@ -303,8 +302,7 @@ void set_instruction(FILE* f, struct instr* inst) {
                 case 0xb:   //POP
                     set_mn(inst, "pop");
                     break;
-            }
-        
+            } 
             break;
     }
 }
