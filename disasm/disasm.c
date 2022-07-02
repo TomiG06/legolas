@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include <string.h>
+#include <math.h>
 #include "disasm.h"
 #include "opcodes.h"
 #include "helpers.h"
@@ -60,8 +61,55 @@ void mod_rm(uint8_t* byte, struct instr* inst) {
     inst->mrm.rm  = *byte & 7;
 }
 
+void sib(uint8_t* byte, struct instr* inst) {
+    inst->sb.scale = pow(2, *byte >> 6);
+    inst->sb.index = *byte >> 3 & 7;
+    inst->sb.base = *byte & 7;
+}
+
 void set_mn(struct instr* i, char* mnemonic) { strcpy(i->mnemonic, mnemonic); }
 void set_desc(struct instr* i, char* description) { strcpy(i->descr_opers, description); }
+
+void get_operands(FILE* f, struct instr* inst, char reverse, char* descr) {
+    /*
+        This function is used in
+        rm81632_r81632 and r81632_rm81632
+
+        reverse must be either 1 or 0
+    */
+    uint8_t r_operand = reverse;
+    uint8_t rm_operand = !reverse;
+
+    uint32_t buff;
+    switch(inst->mrm.mod) {
+        case 0:
+            switch(inst->mrm.rm) {
+                case 4:
+                    read_b(f, 1, &buff);
+                    sib((uint8_t*)&buff, inst);
+                    break;
+                case 5:
+                    read_b(f, 4, &inst->operands[rm_operand]);
+                    break;
+            }
+            set_desc(inst, descr);
+            inst->operands[r_operand] = inst->mrm.reg;
+            break;
+        case 1:
+        case 2:
+            set_desc(inst, descr);
+            read_b(f, 1, &buff);
+            sib((uint8_t*)&buff, inst);
+            read_b(f, inst->mrm.mod*2, &inst->operands[rm_operand]);
+            break;
+        case 3:
+            set_desc(inst, "r_r");
+            inst->operands[r_operand] = inst->mrm.rm;
+            inst->operands[rm_operand] = inst->mrm.reg;
+            break;
+    }
+}
+
 
 void rm81632_r81632(FILE* f, char* mnemonic, uint8_t rm8_r8_op, struct instr* inst) {
     if(inst->opcode == rm8_r8_op) {
@@ -75,19 +123,7 @@ void rm81632_r81632(FILE* f, char* mnemonic, uint8_t rm8_r8_op, struct instr* in
     read_b(f, 1, &buff);
     set_mn(inst, mnemonic);
     mod_rm((uint8_t*)&buff, inst);
-
-    switch(inst->mrm.mod) {
-        case 0:
-            set_desc(inst, "r_m");
-            inst->operands[0] = inst->mrm.reg;
-            read_b(f, 4, &inst->operands[1]);
-            break;
-        case 3:
-            set_desc(inst, "r_r");
-            inst->operands[0] = inst->mrm.rm;
-            inst->operands[1] = inst->mrm.reg;
-            break;
-    }
+    get_operands(f, inst, 0, "rm_r");
 }
 
 void r81632_rm81632(FILE* f, char* mnemonic, uint8_t r8_rm8_op, struct instr* inst) {
@@ -97,15 +133,16 @@ void r81632_rm81632(FILE* f, char* mnemonic, uint8_t r8_rm8_op, struct instr* in
     inst->opernum = 2;
 
     set_mn(inst, mnemonic);
-    set_desc(inst, "r_m");
 
     if(inst->opcode == r8_rm8_op) {
         inst->op = 8;
         inst->addr = 8;
     } else if(inst->op == 16) inst->addr = 16;
 
-    inst->operands[0] = inst->mrm.reg;
-    read_b(f, 4, &inst->operands[1]);
+    get_operands(f, inst, 1, "r_rm");
+
+/*    inst->operands[0] = inst->mrm.reg;
+    read_b(f, 4, &inst->operands[1]);*/
 }
 
 void smth_aleax(FILE* f, char* mnemonic, uint8_t imm8, struct instr* inst) {
@@ -122,7 +159,7 @@ void smth_aleax(FILE* f, char* mnemonic, uint8_t imm8, struct instr* inst) {
 //Stuck instructions used with seg registers
 void stack_seg(struct instr* inst, char* mnemonic, uint8_t seg) {
     set_mn(inst, mnemonic);
-    set_desc(inst, "seg");
+    set_desc(inst, "sreg");
     inst->operands[0] = seg;
     inst->opernum = 1;
 }
@@ -304,6 +341,37 @@ void set_instruction(FILE* f, struct instr* inst) {
                     break;
             } 
             break;
+
+        case PUSHA:
+            set_mn(inst, "pusha");
+            break;
+        case POPA:
+            set_mn(inst, "popa");
+            break;
+        case BOUND_r1632_m1632:
+        case ARPL_rm16_r16:
+        case PUSH_imm1632:
+            set_mn(inst, "push");
+            read_b(f, 4, &inst->operands[0]);
+            break;
+        case IMUL_r1632_rm1632_imm1632:
+        case PUSH_imm8:
+            set_mn(inst, "push");
+            read_b(f, 1, &inst->operands[0]);
+            break;
+        case IMUL_r1632_rm1632_imm8:
+        case INSB:
+            set_mn(inst, "insb");
+            break;
+        case INS_WD:
+            set_mn(inst, inst->op == 32? "insd": "insw");
+        case OUTSB:
+            set_mn(inst, "outsb");
+            break;
+        case OUTS_WD:
+            set_mn(inst, inst->op == 32? "outsd": "outsw");
+            break;
+
     }
 }
 
@@ -313,7 +381,8 @@ void start_disassembly(FILE* f, uint32_t text_size) {
         
         instruction.opcode = set_prefixes(f, &instruction);
         set_instruction(f, &instruction);
-        printf("%d %s %u %u\n", instruction.op, instruction.mnemonic, instruction.operands[0], instruction.operands[1]);
+        printf("%d %s %x %x ", instruction.op, instruction.mnemonic, instruction.operands[0], instruction.operands[1]);
+        printf("[%x+%x*%x+%x]\n", instruction.sb.base, instruction.sb.index, instruction.sb.scale, instruction.operands[strcmp(instruction.descr_opers, "r_rm")? 1:0]);
         //print_instr(&instruction);
     }
 }
