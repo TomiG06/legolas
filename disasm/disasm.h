@@ -14,7 +14,13 @@
     sti
 */
 
-struct modrm {
+struct SIB {
+    uint8_t scale;
+    uint8_t index;
+    uint32_t base;
+};
+
+struct MODRM {
     uint8_t mod:2;
     uint8_t reg:3;
     uint8_t rm:3;
@@ -30,7 +36,8 @@ struct instr {
 
     uint8_t extended;
 
-    struct modrm mrm;
+    struct MODRM mrm;
+    struct SIB sb;
 
     uint8_t opernum;
     char descr_opers[32];
