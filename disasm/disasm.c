@@ -355,11 +355,16 @@ void set_instruction(FILE* f, struct instr* inst) {
             read_b(f, 4, &inst->operands[0]);
             break;
         case IMUL_r1632_rm1632_imm1632:
+        case IMUL_r1632_rm1632_imm8:
+            //its really the same, just with a 3rd immediate operand
+            r81632_rm81632(f, "imul", 0, inst);
+            read_b(f, inst->opcode == IMUL_r1632_rm1632_imm8? 1 : 4, &inst->operands[2]);
+            strcat(inst->descr_opers, "_imm");
+            break;
         case PUSH_imm8:
             set_mn(inst, "push");
             read_b(f, 1, &inst->operands[0]);
             break;
-        case IMUL_r1632_rm1632_imm8:
         case INSB:
             set_mn(inst, "insb");
             break;
@@ -381,7 +386,7 @@ void start_disassembly(FILE* f, uint32_t text_size) {
         
         instruction.opcode = set_prefixes(f, &instruction);
         set_instruction(f, &instruction);
-        printf("%d %s %x %x ", instruction.op, instruction.mnemonic, instruction.operands[0], instruction.operands[1]);
+        printf("%d %s %x %x %x %s\n", instruction.op, instruction.mnemonic, instruction.operands[0], instruction.operands[1], instruction.operands[2], instruction.descr_opers);
         printf("[%x+%x*%x+%x]\n", instruction.sb.base, instruction.sb.index, instruction.sb.scale, instruction.operands[strcmp(instruction.descr_opers, "r_rm")? 1:0]);
         //print_instr(&instruction);
     }
