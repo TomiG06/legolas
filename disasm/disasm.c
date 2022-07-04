@@ -394,10 +394,7 @@ void start_disassembly(FILE* f, uint32_t text_size) {
         
         instruction.opcode = set_prefixes(f, &instruction);
         set_instruction(f, &instruction);
-        //printf("MOD: %d\n", instruction.mrm.mod);
-        printf("%d %s %x %x %x\n", instruction.op, instruction.mnemonic, instruction.operands[0], instruction.operands[1], instruction.operands[2]);
-        printf("[%x+%x*%x+%x]\n", instruction.sb.base, instruction.sb.index, instruction.sb.scale, instruction.operands[instruction.description[1] == rm ? 1:0]);
-        //print_instr(&instruction);
+        print_instr(&instruction);
     }
 }
 
@@ -426,20 +423,26 @@ void get_sregister(char* buff, uint8_t num) {
 
 void print_instr(struct instr* inst) {
     printf("%s", inst->mnemonic);
+    char* buff = (char*)malloc(100);
 
     for(size_t i = 0; i < inst->opernum; i++) {
-        char* buff;
         switch(inst->description[i]) {
             case r:
                 strcpy(buff, reg32[inst->operands[i]]);
-                if(inst->op == 16 || (i == 1 && inst->addr == 16)) buff++;
+                if(inst->op == 16 || (i == 1 && inst->addr == 16)) {
+                    for(size_t i = 0; i < 3; i++) buff[i] = buff[i+1];
+                }
                 else if(inst->op == 8) {
                     strcpy(buff, reg8[inst->operands[i]]);
                     buff[2] = 0;
                 }
                 break;
             case rm:
-                // 
+                switch(inst->addr) {
+                    case 8:
+                        sprintf(buff, "byte[0x%x]", inst->operands[i]);
+                        break;
+                }
                 break;
             case imm:
                 sprintf(buff, "0x%x", inst->operands[i]);
@@ -450,7 +453,8 @@ void print_instr(struct instr* inst) {
         }
         
         printf(" %s%c", buff, i +1 != inst->opernum? ',': 10);
-
     }
+
+    free(buff);
 
 }
