@@ -68,7 +68,7 @@ void sib(uint8_t* byte, struct instr* inst) {
 }
 
 void set_mn(struct instr* i, char* mnemonic) { strcpy(i->mnemonic, mnemonic); }
-void set_desc(struct instr* i, char* description) { strcpy(i->descr_opers, description); }
+void set_desc(struct instr* inst, char* desc) { strcpy(inst->description, desc); }
 
 void get_operands(FILE* f, struct instr* inst, char reverse, char* descr) {
     /*
@@ -79,6 +79,7 @@ void get_operands(FILE* f, struct instr* inst, char reverse, char* descr) {
     */
     uint8_t r_operand = reverse;
     uint8_t rm_operand = !reverse;
+    char descr_reg_reg[] = {r, r};
 
     uint32_t buff;
     switch(inst->mrm.mod) {
@@ -100,12 +101,13 @@ void get_operands(FILE* f, struct instr* inst, char reverse, char* descr) {
             set_desc(inst, descr);
             read_b(f, 1, &buff);
             sib((uint8_t*)&buff, inst);
+            inst->operands[r_operand] = inst->mrm.reg;
             read_b(f, inst->mrm.mod*2, &inst->operands[rm_operand]);
             break;
         case 3:
-            set_desc(inst, "r_r");
-            inst->operands[r_operand] = inst->mrm.rm;
-            inst->operands[rm_operand] = inst->mrm.reg;
+            set_desc(inst, descr_reg_reg);
+            inst->operands[rm_operand] = inst->mrm.rm;
+            inst->operands[r_operand] = inst->mrm.reg;
             break;
     }
 }
@@ -120,14 +122,16 @@ void rm81632_r81632(FILE* f, char* mnemonic, uint8_t rm8_r8_op, struct instr* in
     inst->opernum = 2;
 
     uint32_t buff;
+    char desc[] = {rm, r};
     read_b(f, 1, &buff);
     set_mn(inst, mnemonic);
     mod_rm((uint8_t*)&buff, inst);
-    get_operands(f, inst, 0, "rm_r");
+    get_operands(f, inst, 1, desc);
 }
 
 void r81632_rm81632(FILE* f, char* mnemonic, uint8_t r8_rm8_op, struct instr* inst) {
     uint32_t buff;
+    char desc[] = {r, rm};
     read_b(f, 1, &buff);
     mod_rm((uint8_t*)&buff, inst);
     inst->opernum = 2;
@@ -139,17 +143,18 @@ void r81632_rm81632(FILE* f, char* mnemonic, uint8_t r8_rm8_op, struct instr* in
         inst->addr = 8;
     } else if(inst->op == 16) inst->addr = 16;
 
-    get_operands(f, inst, 1, "r_rm");
+    get_operands(f, inst, 0, desc);
 
 /*    inst->operands[0] = inst->mrm.reg;
     read_b(f, 4, &inst->operands[1]);*/
 }
 
 void smth_aleax(FILE* f, char* mnemonic, uint8_t imm8, struct instr* inst) {
+    char desc[] = {r, imm};
     inst->operands[0] = eax;
     inst->opernum = 2;
     set_mn(inst, mnemonic);
-    set_desc(inst, "r_imm");
+    set_desc(inst, desc);
 
     if(inst->opcode == imm8) inst->op = 8;
 
@@ -158,8 +163,9 @@ void smth_aleax(FILE* f, char* mnemonic, uint8_t imm8, struct instr* inst) {
 
 //Stuck instructions used with seg registers
 void stack_seg(struct instr* inst, char* mnemonic, uint8_t seg) {
+    char desc[] = {sreg};
     set_mn(inst, mnemonic);
-    set_desc(inst, "sreg");
+    set_desc(inst, desc);
     inst->operands[0] = seg;
     inst->opernum = 1;
 }
@@ -359,7 +365,7 @@ void set_instruction(FILE* f, struct instr* inst) {
             //its really the same, just with a 3rd immediate operand
             r81632_rm81632(f, "imul", 0, inst);
             read_b(f, inst->opcode == IMUL_r1632_rm1632_imm8? 1 : 4, &inst->operands[2]);
-            strcat(inst->descr_opers, "_imm");
+            inst->description[2] = imm;
             break;
         case PUSH_imm8:
             set_mn(inst, "push");
@@ -380,15 +386,71 @@ void set_instruction(FILE* f, struct instr* inst) {
     }
 }
 
+void print_instr(struct instr* inst);
+
 void start_disassembly(FILE* f, uint32_t text_size) {
     while(counter < text_size) {
         struct instr instruction = {32, 32, 0, 0, 0, 0, 0, 0, 0, 0};
         
         instruction.opcode = set_prefixes(f, &instruction);
         set_instruction(f, &instruction);
-        printf("%d %s %x %x %x %s\n", instruction.op, instruction.mnemonic, instruction.operands[0], instruction.operands[1], instruction.operands[2], instruction.descr_opers);
-        printf("[%x+%x*%x+%x]\n", instruction.sb.base, instruction.sb.index, instruction.sb.scale, instruction.operands[strcmp(instruction.descr_opers, "r_rm")? 1:0]);
+        //printf("MOD: %d\n", instruction.mrm.mod);
+        printf("%d %s %x %x %x\n", instruction.op, instruction.mnemonic, instruction.operands[0], instruction.operands[1], instruction.operands[2]);
+        printf("[%x+%x*%x+%x]\n", instruction.sb.base, instruction.sb.index, instruction.sb.scale, instruction.operands[instruction.description[1] == rm ? 1:0]);
         //print_instr(&instruction);
     }
 }
 
+void get_sregister(char* buff, uint8_t num) {
+    switch(num) {
+        case SEG_ES:
+            strcpy(buff, "es");
+            break;
+        case SEG_CS:
+            strcpy(buff, "cs");
+            break;
+        case SEG_SS:
+            strcpy(buff, "ss");
+            break;
+        case SEG_DS:
+            strcpy(buff, "ds");
+            break;
+        case SEG_FS:
+            strcpy(buff, "fs");
+            break;
+        case SEG_GS:
+            strcpy(buff, "gs");
+            break;
+    }
+}
+
+void print_instr(struct instr* inst) {
+    printf("%s", inst->mnemonic);
+
+    for(size_t i = 0; i < inst->opernum; i++) {
+        char* buff;
+        switch(inst->description[i]) {
+            case r:
+                strcpy(buff, reg32[inst->operands[i]]);
+                if(inst->op == 16 || (i == 1 && inst->addr == 16)) buff++;
+                else if(inst->op == 8) {
+                    strcpy(buff, reg8[inst->operands[i]]);
+                    buff[2] = 0;
+                }
+                break;
+            case rm:
+                // 
+                break;
+            case imm:
+                sprintf(buff, "0x%x", inst->operands[i]);
+                break;
+            case sreg:
+                get_sregister(buff, inst->operands[i]);
+                break;
+        }
+        
+        printf(" %s%c", buff, i +1 != inst->opernum? ',': 10);
+
+    }
+
+}

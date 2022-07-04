@@ -3,16 +3,17 @@
 
 #include <stdint.h>
 
-/*
-    r
-    m
-    imm
-    seg
-    rel
-    ptr
-    moffs
+enum {
+    r = 1,
+    rm,
+    m,
+    imm,
+    sreg,
+    ptr,
+    moffs,
     sti
-*/
+};
+
 
 struct SIB {
     uint8_t scale;
@@ -40,7 +41,7 @@ struct instr {
     struct SIB sb;
 
     uint8_t opernum;
-    char descr_opers[32];
+    char description[4];
 
     uint8_t opcode;
     char mnemonic[16]; //it isn't that long
