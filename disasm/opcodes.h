@@ -437,7 +437,7 @@ enum {
     esi,
     edi,
 
-    reg_c
+    reg_c //Number of registers
 };
 
 
@@ -452,7 +452,7 @@ enum {
     bh
 };
 
-const char reg32[reg_c][3] = {"eax", "ecx", "edx", "ebx", "esp", "ebp", "esi", "edi"};
-const char reg8[reg_c][2] = {"al", "cl", "dl", "bl", "ah", "ch", "dh", "bh"};
+const char reg32[reg_c][4] = {"eax", "ecx", "edx", "ebx", "esp", "ebp", "esi", "edi"};
+const char reg8[reg_c][3] = {"al", "cl", "dl", "bl", "ah", "ch", "dh", "bh"};
 
 #endif
