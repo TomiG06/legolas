@@ -84,6 +84,16 @@ void get_operands(FILE* f, struct instr* inst, char reverse, char* descr) {
     char descr_reg_reg[] = {r, r};
 
     uint32_t buff = 0;
+
+    /*
+    for every mod
+
+
+    switch rm:
+        case 4: get sib + disp if exists
+        case 5: get disp32 if mod == 0
+    */
+
     switch(inst->mrm.mod) {
         case 0:
             switch(inst->mrm.rm) {
@@ -391,6 +401,7 @@ void start_disassembly(FILE* f, uint32_t text_size) {
         set_instruction(f, &instruction);
         print_instr(&instruction);
     }
+
 }
 
 void get_sregister(char* buff, uint8_t num) {
@@ -449,7 +460,7 @@ void print_instr(struct instr* inst) {
                     case 32:
                         sprintf(buff, "dword[%s%s", sreg_buff, inst->seg? ":": "");
                         if(inst->hasSIB) {
-                            sprintf(buff, "%s%s+%s*%.0lf+0x%X]", buff, reg32[inst->sb.base], reg32[inst->sb.index], pow(2, inst->sb.scale), inst->operands[i]);
+                            sprintf(buff, "%s%s%s%s*%.0lf+0x%X]", buff, inst->sb.base != ebp? reg32[inst->sb.base]: "", inst->sb.base != ebp?"+": "", reg32[inst->sb.index], pow(2, inst->sb.scale), inst->operands[i]);
                         } else {
                             sprintf(buff, "%s0x%X]", buff, inst->operands[i]);
                         }
