@@ -16,9 +16,9 @@ enum {
 
 
 struct SIB {
-    uint8_t scale;
-    uint8_t index;
-    uint32_t base;
+    uint8_t scale:2;
+    uint8_t index:3;
+    uint8_t base:3;
 };
 
 struct MODRM {
@@ -42,6 +42,7 @@ struct instr {
 
     uint8_t opernum;
     char description[4];
+    uint8_t hasSIB;
 
     uint8_t opcode;
     char mnemonic[16]; //it isn't that long

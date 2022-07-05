@@ -62,9 +62,11 @@ void mod_rm(uint8_t* byte, struct instr* inst) {
 }
 
 void sib(uint8_t* byte, struct instr* inst) {
-    inst->sb.scale = pow(2, *byte >> 6);
+    inst->sb.scale = *byte >> 6;
     inst->sb.index = *byte >> 3 & 7;
     inst->sb.base = *byte & 7;
+
+    inst->hasSIB = 1;
 }
 
 void set_mn(struct instr* i, char* mnemonic) { strcpy(i->mnemonic, mnemonic); }
@@ -81,7 +83,7 @@ void get_operands(FILE* f, struct instr* inst, char reverse, char* descr) {
     uint8_t rm_operand = !reverse;
     char descr_reg_reg[] = {r, r};
 
-    uint32_t buff;
+    uint32_t buff = 0;
     switch(inst->mrm.mod) {
         case 0:
             switch(inst->mrm.rm) {
@@ -114,14 +116,11 @@ void get_operands(FILE* f, struct instr* inst, char reverse, char* descr) {
 
 
 void rm81632_r81632(FILE* f, char* mnemonic, uint8_t rm8_r8_op, struct instr* inst) {
-    if(inst->opcode == rm8_r8_op) {
-        inst->op = 8;
-        inst->addr = 8;
-    } else if(inst->op == 16) inst->addr = 16;
+    if(inst->opcode == rm8_r8_op) inst->op = 8;
 
     inst->opernum = 2;
 
-    uint32_t buff;
+    uint32_t buff = 0;
     char desc[] = {rm, r};
     read_b(f, 1, &buff);
     set_mn(inst, mnemonic);
@@ -130,7 +129,7 @@ void rm81632_r81632(FILE* f, char* mnemonic, uint8_t rm8_r8_op, struct instr* in
 }
 
 void r81632_rm81632(FILE* f, char* mnemonic, uint8_t r8_rm8_op, struct instr* inst) {
-    uint32_t buff;
+    uint32_t buff = 0;
     char desc[] = {r, rm};
     read_b(f, 1, &buff);
     mod_rm((uint8_t*)&buff, inst);
@@ -138,15 +137,9 @@ void r81632_rm81632(FILE* f, char* mnemonic, uint8_t r8_rm8_op, struct instr* in
 
     set_mn(inst, mnemonic);
 
-    if(inst->opcode == r8_rm8_op) {
-        inst->op = 8;
-        inst->addr = 8;
-    } else if(inst->op == 16) inst->addr = 16;
+    if(inst->opcode == r8_rm8_op) inst->op = 8;
 
     get_operands(f, inst, 0, desc);
-
-/*    inst->operands[0] = inst->mrm.reg;
-    read_b(f, 4, &inst->operands[1]);*/
 }
 
 void smth_aleax(FILE* f, char* mnemonic, uint8_t imm8, struct instr* inst) {
@@ -331,6 +324,7 @@ void set_instruction(FILE* f, struct instr* inst) {
            
             inst->opernum = 1;
             inst->operands[0] = inst->opcode & 7;
+            inst->description[0] = r;
 
             switch(inst->opcode >> 3) {
                 case 0x8:   //INC
@@ -366,6 +360,7 @@ void set_instruction(FILE* f, struct instr* inst) {
             r81632_rm81632(f, "imul", 0, inst);
             read_b(f, inst->opcode == IMUL_r1632_rm1632_imm8? 1 : 4, &inst->operands[2]);
             inst->description[2] = imm;
+            inst->opernum = 3;
             break;
         case PUSH_imm8:
             set_mn(inst, "push");
@@ -418,18 +413,24 @@ void get_sregister(char* buff, uint8_t num) {
         case SEG_GS:
             strcpy(buff, "gs");
             break;
+        default:
+            break;
     }
 }
 
 void print_instr(struct instr* inst) {
     printf("%s", inst->mnemonic);
     char* buff = (char*)malloc(100);
+    char sreg_buff[3] = "";
+
+    if(!buff) malloc_fail_and_exit();
+    get_sregister(sreg_buff, inst->seg);
 
     for(size_t i = 0; i < inst->opernum; i++) {
         switch(inst->description[i]) {
             case r:
                 strcpy(buff, reg32[inst->operands[i]]);
-                if(inst->op == 16 || (i == 1 && inst->addr == 16)) {
+                if(inst->op == 16) {
                     for(size_t i = 0; i < 3; i++) buff[i] = buff[i+1];
                 }
                 else if(inst->op == 8) {
@@ -440,7 +441,18 @@ void print_instr(struct instr* inst) {
             case rm:
                 switch(inst->addr) {
                     case 8:
-                        sprintf(buff, "byte[0x%x]", inst->operands[i]);
+                        sprintf(buff, "byte[%s%s0x%X]", sreg_buff, inst->seg? ":": "", inst->operands[i]);
+                        break;
+                    case 16:
+                        sprintf(buff, "word[%s%s", sreg_buff, inst->seg? ":": "");
+                        break;
+                    case 32:
+                        sprintf(buff, "dword[%s%s", sreg_buff, inst->seg? ":": "");
+                        if(inst->hasSIB) {
+                            sprintf(buff, "%s%s+%s*%.0lf+0x%X]", buff, reg32[inst->sb.base], reg32[inst->sb.index], pow(2, inst->sb.scale), inst->operands[i]);
+                        } else {
+                            sprintf(buff, "%s0x%X]", buff, inst->operands[i]);
+                        }
                         break;
                 }
                 break;
@@ -456,5 +468,5 @@ void print_instr(struct instr* inst) {
     }
 
     free(buff);
-
 }
+
