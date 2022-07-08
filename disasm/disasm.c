@@ -8,10 +8,6 @@
 #include "helpers.h"
 
 static uint8_t prefixes[] = {OP_SIZE, ADDR_SIZE, REP_REPE, REPNE, LOCK, SEG_ES, SEG_CS, SEG_SS, SEG_DS, SEG_FS, SEG_GS, EXTENDED};
-static uint8_t segs[] = {SEG_ES, SEG_CS, SEG_SS, SEG_DS, SEG_FS, SEG_GS};
-
-static const size_t pfx_size = sizeof(prefixes);
-static const size_t seg_size = sizeof(segs);
 
 char contained(uint8_t el, uint8_t arr[], const size_t size) {
     for(size_t i = 0; i < size; i++) {
@@ -25,7 +21,7 @@ uint8_t set_prefixes(FILE* f, struct instr* inst) {
     uint32_t pfx = 0;
     read_b(f, 1, &pfx);
     //if 'pfx' is not contained in prefixes, this means that 'pfx' is an opcode
-    while(contained(pfx, prefixes, pfx_size)) {
+    while(contained(pfx, prefixes, sizeof(prefixes))) {
         switch(pfx) {
             case OP_SIZE:
                 inst->op = 16;
