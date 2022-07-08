@@ -85,42 +85,56 @@ void get_operands(FILE* f, struct instr* inst, char reverse, char* descr) {
 
     uint32_t buff = 0;
 
-    /*
-    for every mod
+    inst->operands[r_operand] = inst->mrm.reg;
 
 
-    switch rm:
-        case 4: get sib + disp if exists
-        case 5: get disp32 if mod == 0
-    */
-
-    switch(inst->mrm.mod) {
-        case 0:
-            switch(inst->mrm.rm) {
-                case 4:
+    if(inst->addr == 32) {
+        switch(inst->mrm.mod) {
+            case 0:
+                switch(inst->mrm.rm) {
+                    case 4:
+                        read_b(f, 1, &buff);
+                        sib((uint8_t*)&buff, inst);
+                        break;
+                    case 5:
+                        read_b(f, 4, &inst->operands[rm_operand]);
+                        break;
+                }
+                set_desc(inst, descr);
+                break;
+            case 1:
+            case 2:
+                set_desc(inst, descr);
+                if(inst->mrm.rm == 4) {
                     read_b(f, 1, &buff);
                     sib((uint8_t*)&buff, inst);
-                    break;
-                case 5:
-                    read_b(f, 4, &inst->operands[rm_operand]);
-                    break;
-            }
-            set_desc(inst, descr);
-            inst->operands[r_operand] = inst->mrm.reg;
-            break;
-        case 1:
-        case 2:
-            set_desc(inst, descr);
-            read_b(f, 1, &buff);
-            sib((uint8_t*)&buff, inst);
-            inst->operands[r_operand] = inst->mrm.reg;
-            read_b(f, inst->mrm.mod*2, &inst->operands[rm_operand]);
-            break;
-        case 3:
-            set_desc(inst, descr_reg_reg);
-            inst->operands[rm_operand] = inst->mrm.rm;
-            inst->operands[r_operand] = inst->mrm.reg;
-            break;
+                }
+                read_b(f, inst->mrm.mod*2, &inst->operands[rm_operand]);
+                break;
+            case 3:
+                set_desc(inst, descr_reg_reg);
+                inst->operands[rm_operand] = inst->mrm.rm;
+                break;
+        }
+    } else if(inst->addr == 16) {
+        switch(inst->mrm.mod) {
+            case 0:
+                set_desc(inst, descr);
+                if(inst->mrm.rm == 6) {
+                    read_b(f, 2, &inst->operands[rm_operand]);
+                }
+                break;
+            case 1:
+            case 2:
+                set_desc(inst, descr);
+                read_b(f, inst->mrm.mod, &inst->operands[rm_operand]);
+                break;
+            case 3:
+                set_desc(inst, descr_reg_reg);
+                inst->operands[rm_operand] = inst->mrm.rm;
+                inst->operands[r_operand] = inst->mrm.reg;
+                break;
+        }
     }
 }
 
@@ -450,19 +464,37 @@ void print_instr(struct instr* inst) {
                 }
                 break;
             case rm:
-                switch(inst->addr) {
+                switch(inst->op) {
                     case 8:
-                        sprintf(buff, "byte[%s%s0x%X]", sreg_buff, inst->seg? ":": "", inst->operands[i]);
+                        sprintf(buff, "byte[%s%s", sreg_buff, inst->seg? ":": "");
                         break;
                     case 16:
                         sprintf(buff, "word[%s%s", sreg_buff, inst->seg? ":": "");
                         break;
                     case 32:
                         sprintf(buff, "dword[%s%s", sreg_buff, inst->seg? ":": "");
+                        break;
+                }
+
+                switch(inst->addr) {
+                    case 16:
+                        if(!inst->mrm.mod && inst->mrm.rm == 6) sprintf(buff, "%s0x%X]", buff, inst->operands[i]);
+                        else {
+                            sprintf(buff, "%s%s", buff, rm16[inst->mrm.rm]);
+                            if(inst->mrm.mod) sprintf(buff, "%s%c0x%X", buff, '+', inst->operands[i]);
+                            sprintf(buff, "%s]", buff);
+                        }
+                        break;
+                    case 32:
                         if(inst->hasSIB) {
-                            sprintf(buff, "%s%s%s%s*%.0lf+0x%X]", buff, inst->sb.base != ebp? reg32[inst->sb.base]: "", inst->sb.base != ebp?"+": "", reg32[inst->sb.index], pow(2, inst->sb.scale), inst->operands[i]);
+                            sprintf(buff, "%s%s+%s*%.0f", buff, reg32[inst->sb.base], reg32[inst->sb.index], pow(2, inst->sb.scale));
+                            if(inst->mrm.mod) sprintf(buff, "%s+0x%X", buff, inst->operands[i]);
+                            sprintf(buff, "%s]", buff);
                         } else {
-                            sprintf(buff, "%s0x%X]", buff, inst->operands[i]);
+                            if(!inst->mrm.mod) {
+                                if(inst->mrm.rm == 5) sprintf(buff, "%s0x%X]", buff, inst->operands[i]);
+                                else sprintf(buff, "%s%s]", buff, reg32[inst->mrm.rm]);
+                            } else sprintf(buff, "%s%s+0x%X]", buff, reg32[inst->mrm.rm], inst->operands[i]);
                         }
                         break;
                 }
