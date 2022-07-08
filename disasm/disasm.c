@@ -369,7 +369,13 @@ void set_instruction(FILE* f, struct instr* inst) {
             set_mn(inst, "popa");
             break;
         case BOUND_r1632_m1632:
+            r81632_rm81632(f, "bound", 0, inst);
+            inst->description[1] = m;
+            break;
         case ARPL_rm16_r16:
+            inst->op = 16;
+            rm81632_r81632(f, "arpl", 0, inst);
+            break;
         case PUSH_imm1632:
             set_mn(inst, "push");
             read_b(f, 4, &inst->operands[0]);
@@ -440,7 +446,14 @@ void get_sregister(char* buff, uint8_t num) {
 }
 
 void print_instr(struct instr* inst) {
+    //print prefixes
+    if(inst->rep)   printf("repe ");
+    if(inst->repn)  printf("repne ");
+    if(inst->lock)  printf("lock ");
+
+    //print mnemonic
     printf("%s", inst->mnemonic);
+
     char* buff = (char*)malloc(100);
     char sreg_buff[3] = "";
 
@@ -453,24 +466,14 @@ void print_instr(struct instr* inst) {
                 strcpy(buff, reg32[inst->operands[i]]);
                 if(inst->op == 16) {
                     for(size_t i = 0; i < 3; i++) buff[i] = buff[i+1];
-                }
-                else if(inst->op == 8) {
+                } else if(inst->op == 8) {
                     strcpy(buff, reg8[inst->operands[i]]);
                     buff[2] = 0;
                 }
                 break;
             case rm:
-                switch(inst->op) {
-                    case 8:
-                        sprintf(buff, "byte[%s%s", sreg_buff, inst->seg? ":": "");
-                        break;
-                    case 16:
-                        sprintf(buff, "word[%s%s", sreg_buff, inst->seg? ":": "");
-                        break;
-                    case 32:
-                        sprintf(buff, "dword[%s%s", sreg_buff, inst->seg? ":": "");
-                        break;
-                }
+            case m:
+                sprintf(buff, "%s[%s%s", inst->description[i] == rm? rm_ptr[(int)log2(inst->op)-3]: "", sreg_buff, inst->seg? ":": "");
 
                 switch(inst->addr) {
                     case 16:
