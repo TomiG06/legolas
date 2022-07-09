@@ -9,6 +9,7 @@
 
 static uint8_t prefixes[] = {OP_SIZE, ADDR_SIZE, REP_REPE, REPNE, LOCK, SEG_ES, SEG_CS, SEG_SS, SEG_DS, SEG_FS, SEG_GS, EXTENDED};
 
+//Function to check if a number is in an array
 char contained(uint8_t el, uint8_t arr[], const size_t size) {
     for(size_t i = 0; i < size; i++) {
         if(el == arr[i]) return 1;
@@ -17,10 +18,15 @@ char contained(uint8_t el, uint8_t arr[], const size_t size) {
     return 0;
 }
 
+/*
+    The function below runs every time in order to check
+    for prefixes. When a byte is not in prefixes, it means
+    that it is the opcode
+*/
 uint8_t set_prefixes(FILE* f, struct instr* inst) {
     uint32_t pfx = 0;
     read_b(f, 1, &pfx);
-    //if 'pfx' is not contained in prefixes, this means that 'pfx' is an opcode
+
     while(contained(pfx, prefixes, sizeof(prefixes))) {
         switch(pfx) {
             case OP_SIZE:
@@ -48,15 +54,17 @@ uint8_t set_prefixes(FILE* f, struct instr* inst) {
         read_b(f, 1, &pfx);
     }
 
-    return (uint8_t)pfx;
+    inst->opcode = pfx;
 }
 
+//decode Mod R/M byte
 void mod_rm(uint8_t* byte, struct instr* inst) {
     inst->mrm.mod = *byte >> 6;
     inst->mrm.reg = *byte >> 3 & 7;
     inst->mrm.rm  = *byte & 7;
 }
 
+//decode SIB byte
 void sib(uint8_t* byte, struct instr* inst) {
     inst->sb.scale = *byte >> 6;
     inst->sb.index = *byte >> 3 & 7;
@@ -413,11 +421,15 @@ void start_disassembly(FILE* f, uint32_t text_size) {
     while(counter < text_size) {
         struct instr instruction = {32, 32, 0, 0, 0, 0, 0, 0, 0, 0};
         
-        instruction.opcode = set_prefixes(f, &instruction);
+        //get prefixes
+        set_prefixes(f, &instruction);
+
+        //set instruction
         set_instruction(f, &instruction);
+
+        //display instruction
         print_instr(&instruction);
     }
-
 }
 
 void get_sregister(char* buff, uint8_t num) {
