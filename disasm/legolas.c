@@ -70,21 +70,27 @@ int main(int argc, char* argv[]) {
 
     char** sh = extract_sheaders(hdr, f);
     int16_t text_index = shindexof(".text", sh, hdr);
+    int16_t symtab_index = shindexof(".symtab", sh, hdr);
 
     if(text_index < 0) {
         printf(".text section not found\n");
         return 1;
     }
 
-    uint32_t text_loc, text_size;
+    uint32_t loc = 0, size = 0;
+
+    fseek(f, SEQ_EL(symtab_index), SEEK_SET); //Some day
+    fread(&loc, sizeof(uint32_t), 1, f);
+    fread(&size, sizeof(uint32_t), 1, f);
+
     
     fseek(f, SEQ_EL(text_index), SEEK_SET);
-    fread(&text_loc, sizeof(uint32_t), 1, f);
-    fread(&text_size, sizeof(uint32_t), 1, f);
+    fread(&loc, sizeof(uint32_t), 1, f);
+    fread(&size, sizeof(uint32_t), 1, f);
 
-    fseek(f, text_loc, SEEK_SET);
+    fseek(f, loc, SEEK_SET);
 
-    start_disassembly(f, text_size);
+    start_disassembly(f, size);
 
     fclose(f);
     return 0;
