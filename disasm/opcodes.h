@@ -101,20 +101,26 @@
 #define JNL_rel8                    0x7D
 #define JLE_rel8                    0x7E
 #define JNLE_rel8                   0x7F
-#define ADD_rm8_imm8                0x80
-#define OR_rm8_imm8                 0x80
-#define ADC_rm8_imm8                0x80
-#define SBB_rm8_imm8                0x80
-#define AND_rm8_imm8                0x80
-#define SUB_rm8_imm8                0x80
-#define XOR_rm8_imm8                0x80
-#define ADD_rm1632_imm1632          0x81
-#define OR_rm1632_imm1632           0x81
-#define ADC_rm1632_imm1632          0x81
-#define SBB_rm1632_imm1632          0x81
-#define AND_rm1632_imm1632          0x81
-#define SUB_rm1632_imm1632          0x81
-#define XOR_rm1632_imm1632          0x81
+
+//0x80                              R/M 
+#define ADD_rm8_imm8                0x00
+#define OR_rm8_imm8                 0x01
+#define ADC_rm8_imm8                0x02
+#define SBB_rm8_imm8                0x03
+#define AND_rm8_imm8                0x04
+#define SUB_rm8_imm8                0x05
+#define XOR_rm8_imm8                0x06
+#define CMP_rm8_imm8                0x07
+
+//0x81
+#define ADD_rm1632_imm1632          0x00
+#define OR_rm1632_imm1632           0x01
+#define ADC_rm1632_imm1632          0x02
+#define SBB_rm1632_imm1632          0x03
+#define AND_rm1632_imm1632          0x04
+#define SUB_rm1632_imm1632          0x05
+#define XOR_rm1632_imm1632          0x06
+#define CMP_rm1632_imm1632          0x07
 /*
 #define ADD_rm8_imm8                0x82    For some reason
 #define OR_rm8_imm8                 0x82    these opcodes are
@@ -124,13 +130,16 @@
 #define SUB_rm8_imm8                0x82
 #define XOR_rm8_imm8                0x82
 */
-#define ADD_rm1632_imm8             0x83
-#define OR_rm1632_imm8              0x83
-#define ADC_rm1632_imm8             0x83
-#define SBB_rm1632_imm8             0x83
-#define AND_rm1632_imm8             0x83
-#define SUB_rm1632_imm8             0x83
-#define XOR_rm1632_imm8             0x83
+//0x83
+#define ADD_rm1632_imm8             0x00
+#define OR_rm1632_imm8              0x01
+#define ADC_rm1632_imm8             0x02
+#define SBB_rm1632_imm8             0x03
+#define AND_rm1632_imm8             0x04
+#define SUB_rm1632_imm8             0x05
+#define XOR_rm1632_imm8             0x06
+#define CMP_rm1632_imm8             0x07
+
 #define TEST_rm8_r8                 0x84
 #define TEST_rm1632_r1632           0x85
 #define XCHG_r8_rm8                 0x86
