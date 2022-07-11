@@ -73,7 +73,13 @@ void sib(uint8_t* byte, struct instr* inst) {
     inst->hasSIB = 1;
 }
 
-void set_mn(struct instr* i, char* mnemonic) { strcpy(i->mnemonic, mnemonic); }
+void set_mn(struct instr* i, char* mnemonic) { 
+    if(!i->mnem_is_set) {
+        strcpy(i->mnemonic, mnemonic);
+        i->mnem_is_set = 1;
+    }
+}
+
 void set_desc(struct instr* inst, char* desc) { strcpy(inst->description, desc); }
 
 void get_operands(FILE* f, struct instr* inst, char rm_index) {
@@ -379,6 +385,8 @@ void set_instruction(FILE* f, struct instr* inst) {
         case PUSH_imm1632:
             set_mn(inst, "push");
             read_b(f, 4, &inst->operands[0]);
+            inst->description[0] = imm;
+            inst->opernum = 1;
             break;
         case IMUL_r1632_rm1632_imm1632:
         case IMUL_r1632_rm1632_imm8:
@@ -391,6 +399,7 @@ void set_instruction(FILE* f, struct instr* inst) {
         case PUSH_imm8:
             set_mn(inst, "push");
             read_b(f, 1, &inst->operands[0]);
+            inst->description[0] = imm;
             break;
         case INSB:
             set_mn(inst, "insb");
@@ -404,6 +413,48 @@ void set_instruction(FILE* f, struct instr* inst) {
             set_mn(inst, inst->op == 32? "outsd": "outsw");
             break;
 
+        //Don't break these
+        case JO_rel8:
+            set_mn(inst, "jo");
+        case JNO_rel8:
+            set_mn(inst, "jno");
+        case JB_rel8:
+            set_mn(inst, "jb");
+        case JNB_rel8:
+            set_mn(inst, "jnb");
+        case JZ_rel8:
+            set_mn(inst, "jz");
+        case JNZ_rel8:
+            set_mn(inst, "jnz");
+        case JBE_rel8:
+            set_mn(inst, "jbe");
+        case JNBE_rel8:
+            set_mn(inst, "jnbe");
+        case JS_rel8:
+            set_mn(inst, "js");
+        case JNS_rel8:  
+            set_mn(inst, "jns");
+        case JP_rel8:
+            set_mn(inst, "jp");
+        case JNP_rel8:
+            set_mn(inst, "jnp");
+        case JL_rel8:
+            set_mn(inst, "jl");
+        case JNL_rel8:
+            set_mn(inst, "jnl");
+        case JLE_rel8:
+            set_mn(inst, "jle");
+        case JNLE_rel8:
+            set_mn(inst, "jnle");
+            inst->opernum = 1;
+
+            read_b(f, 1, &inst->operands[0]);
+
+            //TODO: decode rel8 (we are going to process it as an immediate value for the time being)
+            inst->description[0] = imm;
+
+            break;
+            
     }
 }
 
@@ -503,6 +554,7 @@ void print_instr(struct instr* inst) {
                 }
                 break;
             case imm:
+            default:
                 sprintf(buff, "0x%x", inst->operands[i]);
                 break;
             case sreg:
