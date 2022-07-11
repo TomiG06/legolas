@@ -52,6 +52,8 @@ struct instr {
     //if sib byte exists, this is set to 1
     uint8_t hasSIB;
 
+    uint8_t mnem_is_set;
+
     uint8_t opcode;
     char mnemonic[16]; //it isn't that long
     uint32_t operands[4];
