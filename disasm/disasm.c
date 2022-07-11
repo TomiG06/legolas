@@ -8,6 +8,7 @@
 #include "helpers.h"
 
 static uint8_t prefixes[] = {OP_SIZE, ADDR_SIZE, REP_REPE, REPNE, LOCK, SEG_ES, SEG_CS, SEG_SS, SEG_DS, SEG_FS, SEG_GS, EXTENDED};
+static uint8_t eight_opcodes_rm_imm[] = {0x80, 0x81, 0x82, 0x83};
 
 //Function to check if a number is in an array
 char contained(uint8_t el, uint8_t arr[], const size_t size) {
@@ -153,7 +154,6 @@ void rm81632_r81632(FILE* f, char* mnemonic, uint8_t rm8_r8_op, struct instr* in
 
 void r81632_rm81632(FILE* f, char* mnemonic, uint8_t r8_rm8_op, struct instr* inst) {
     uint32_t buff = 0;
-    char desc[] = {r, rm};
     read_b(f, 1, &buff);
     mod_rm((uint8_t*)&buff, inst);
     inst->opernum = 2;
@@ -188,6 +188,50 @@ void stack_seg(struct instr* inst, char* mnemonic, uint8_t seg) {
     inst->operands[0] = seg;
     inst->description[0] = sreg;
     inst->opernum = 1;
+}
+
+void rm81632_imm81632(FILE* f, char* mnemonic, uint8_t is_rm8, uint8_t is_imm8, struct instr* inst) {
+    uint32_t buff;
+    read_b(f, 1, &buff);
+    mod_rm((uint8_t*)&buff, inst);
+    inst->opernum = 2;
+
+    if(contained(inst->opcode, eight_opcodes_rm_imm, sizeof(eight_opcodes_rm_imm))) {
+        switch(inst->mrm.reg) {
+            case 0:
+                set_mn(inst, "add");
+                break;
+            case 1:
+                set_mn(inst, "or");
+                break;
+            case 2:
+                set_mn(inst, "adc");
+                break;
+            case 3:
+                set_mn(inst, "sbb");
+                break;
+            case 4:
+                set_mn(inst, "and");
+                break;
+            case 5:
+                set_mn(inst, "sub");
+                break;
+            case 6:
+                set_mn(inst, "xor");
+                break;
+            case 7:
+                set_mn(inst, "cmp");
+                break;
+        }
+    }
+
+    if(is_rm8) inst->op = 8;
+
+    set_mn(inst, mnemonic);
+
+    get_operands(f, inst, 0);
+    read_b(f, is_imm8? 1: inst->op/8, &inst->operands[1]);
+    inst->description[1] = imm;
 }
 
 void set_instruction(FILE* f, struct instr* inst) {
@@ -453,6 +497,17 @@ void set_instruction(FILE* f, struct instr* inst) {
             //TODO: decode rel8 (we are going to process it as an immediate value for the time being)
             inst->description[0] = imm;
 
+            break;
+        
+        case 0x80:
+        case 0x82:
+            rm81632_imm81632(f, "", 1, 1, inst);
+            break;
+        case 0x81:
+            rm81632_imm81632(f, "", 0, 0, inst);
+            break;
+        case 0x83:
+            rm81632_imm81632(f, "", 0, 1, inst);
             break;
             
     }
