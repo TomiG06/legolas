@@ -61,17 +61,23 @@ uint8_t set_prefixes(FILE* f, struct instr* inst) {
 }
 
 //decode Mod R/M byte
-void mod_rm(uint8_t* byte, struct instr* inst) {
-    inst->mrm.mod = *byte >> 6;
-    inst->mrm.reg = *byte >> 3 & 7;
-    inst->mrm.rm  = *byte & 7;
+void mod_rm(FILE* f, struct instr* inst) {
+    uint32_t byte = 0;
+    read_b(f, 1, &byte);
+
+    inst->mrm.mod = byte >> 6;
+    inst->mrm.reg = byte >> 3 & 7;
+    inst->mrm.rm  = byte & 7;
 }
 
 //decode SIB byte
-void sib(uint8_t* byte, struct instr* inst) {
-    inst->sb.scale = *byte >> 6;
-    inst->sb.index = *byte >> 3 & 7;
-    inst->sb.base = *byte & 7;
+void sib(FILE* f, struct instr* inst) {
+    uint32_t byte = 0;
+    read_b(f, 1, &byte);
+
+    inst->sb.scale = byte >> 6;
+    inst->sb.index = byte >> 3 & 7;
+    inst->sb.base = byte & 7;
 
     inst->hasSIB = 1;
 }
@@ -92,15 +98,13 @@ void get_operands(FILE* f, struct instr* inst, char rm_index) {
         and set the rm operand accordingly
     */
     inst->description[rm_index] = rm;
-    uint32_t buff = 0;
 
     if(inst->addr == 32) {
         switch(inst->mrm.mod) {
             case 0:
                 switch(inst->mrm.rm) {
                     case 4:
-                        read_b(f, 1, &buff);
-                        sib((uint8_t*)&buff, inst);
+                        sib(f, inst);
                         break;
                     case 5:
                         read_b(f, 4, &inst->operands[rm_index]);
@@ -109,10 +113,7 @@ void get_operands(FILE* f, struct instr* inst, char rm_index) {
                 break;
             case 1:
             case 2:
-                if(inst->mrm.rm == 4) {
-                    read_b(f, 1, &buff);
-                    sib((uint8_t*)&buff, inst);
-                }
+                if(inst->mrm.rm == 4) sib(f, inst);
                 read_b(f, inst->mrm.mod*2, &inst->operands[rm_index]);
                 break;
             case 3:
@@ -143,10 +144,8 @@ void rm81632_r81632(FILE* f, char* mnemonic, uint8_t rm8_r8_op, struct instr* in
 
     inst->opernum = 2;
 
-    uint32_t buff = 0;
-    read_b(f, 1, &buff);
     set_mn(inst, mnemonic);
-    mod_rm((uint8_t*)&buff, inst);
+    mod_rm(f, inst);
 
     inst->operands[1] = inst->mrm.reg;
     inst->description[1] = r;
@@ -155,9 +154,7 @@ void rm81632_r81632(FILE* f, char* mnemonic, uint8_t rm8_r8_op, struct instr* in
 }
 
 void r81632_rm81632(FILE* f, char* mnemonic, uint8_t r8_rm8_op, struct instr* inst) {
-    uint32_t buff = 0;
-    read_b(f, 1, &buff);
-    mod_rm((uint8_t*)&buff, inst);
+    mod_rm(f, inst);
     inst->opernum = 2;
 
     set_mn(inst, mnemonic);
@@ -193,9 +190,7 @@ void stack_seg(struct instr* inst, char* mnemonic, uint8_t seg) {
 }
 
 void rm81632_imm81632(FILE* f, char* mnemonic, uint8_t is_rm8, uint8_t is_imm8, struct instr* inst) {
-    uint32_t buff;
-    read_b(f, 1, &buff);
-    mod_rm((uint8_t*)&buff, inst);
+    mod_rm(f, inst);
     inst->opernum = 2;
 
     if(contained(inst->opcode, eight_opcodes_rm_imm, sizeof(eight_opcodes_rm_imm))) {
@@ -530,9 +525,7 @@ void set_instruction(FILE* f, struct instr* inst) {
             break;
         case MOV_m16r1632_sreg:
             {
-                uint32_t buff;
-                read_b(f, 1, &buff);
-                mod_rm((uint8_t*)&buff, inst);
+                mod_rm(f, inst);
                 set_mn(inst, "mov");
 
                 get_operands(f, inst, 0);
@@ -544,9 +537,7 @@ void set_instruction(FILE* f, struct instr* inst) {
             break;
         case LEA_r1632_m:
             {
-                uint32_t buff;
-                read_b(f, 1, &buff);
-                mod_rm((uint8_t*)&buff, inst);
+                mod_rm(f, inst);
                 set_mn(inst, "lea");
 
                 get_operands(f, inst, 1);
@@ -559,9 +550,7 @@ void set_instruction(FILE* f, struct instr* inst) {
         case MOV_sreg_rm16:
             {
                 inst->op = 16;
-                uint32_t buff;
-                read_b(f, 1, &buff);
-                mod_rm((uint8_t*)&buff, inst);
+                mod_rm(f, inst);
                 set_mn(inst, "mov");
 
                 get_operands(f, inst, 1);
@@ -572,9 +561,7 @@ void set_instruction(FILE* f, struct instr* inst) {
             break;
         case POP_rm1632:
             {
-                uint32_t buff;
-                read_b(f, 1, &buff);
-                mod_rm((uint8_t*)&buff, inst);
+                mod_rm(f, inst);
                 set_mn(inst, "pop");
 
                 get_operands(f, inst, 0);
