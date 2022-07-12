@@ -3,7 +3,8 @@
 #include <string.h>
 #include <stdint.h>
 #include <math.h>
-//#include "opcodes.h"
+
+#include "opcodes.h"
 #include "helpers.h"
 #include "disasm.h"
 
