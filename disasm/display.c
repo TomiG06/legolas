@@ -91,7 +91,7 @@ void display_instr(struct instr* inst) {
                 sprintf(buff, "0x%x", inst->operands[i]);
                 break;
             case sreg:
-                get_sregister(buff, inst->operands[i]);
+                strcpy(buff, sreg_operand[inst->operands[i]]);
                 break;
         }
         
