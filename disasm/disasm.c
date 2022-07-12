@@ -252,7 +252,7 @@ void set_instruction(FILE* f, struct instr* inst) {
             break;
         case PUSH_es:
         case POP_es:
-            stack_seg(inst, inst->opcode == POP_es ? "pop" : "push", SEG_ES);
+            stack_seg(inst, inst->opcode == POP_es ? "pop" : "push", es);
             break;
         case OR_rm8_r8:
         case OR_rm1632_r1632:
@@ -267,7 +267,7 @@ void set_instruction(FILE* f, struct instr* inst) {
             smth_aleax(f, "or", OR_al_imm8, inst);
             break;
         case PUSH_cs:
-            stack_seg(inst, "push", SEG_CS);
+            stack_seg(inst, "push", cs);
             break;
         case ADC_rm8_r8:
         case ADC_rm1632_r1632:
@@ -283,7 +283,7 @@ void set_instruction(FILE* f, struct instr* inst) {
             break;
         case PUSH_ss:
         case POP_ss:
-            stack_seg(inst, inst->opcode == POP_ss? "pop": "push", SEG_SS);
+            stack_seg(inst, inst->opcode == POP_ss? "pop": "push", ss);
             break;
         case SBB_rm8_r8:
         case SBB_rm1632_r1632:
@@ -299,7 +299,7 @@ void set_instruction(FILE* f, struct instr* inst) {
             break;
         case PUSH_ds:
         case POP_ds:
-            stack_seg(inst, inst->opcode == POP_ds ? "pop" : "push", SEG_DS);
+            stack_seg(inst, inst->opcode == POP_ds ? "pop" : "push", ds);
             break;
         case AND_rm8_r8:
         case AND_rm1632_r1632:
@@ -511,7 +511,76 @@ void set_instruction(FILE* f, struct instr* inst) {
         case 0x83:
             rm81632_imm81632(f, "", 0, 1, inst);
             break;
-            
+
+        case TEST_rm8_r8:
+        case TEST_rm1632_r1632:
+            rm81632_r81632(f, "test", TEST_rm8_r8, inst);
+            break;
+        case XCHG_r8_rm8:
+        case XCHG_r1632_rm1632:
+            r81632_rm81632(f, "xchg", XCHG_r8_rm8, inst);
+            break;
+        case MOV_rm8_r8:
+        case MOV_rm1632_r1632:
+            rm81632_r81632(f, "mov", MOV_rm8_r8, inst);
+            break;
+        case MOV_r8_rm8:
+        case MOV_r1632_rm1632:
+            r81632_rm81632(f, "mov", MOV_r8_rm8, inst);
+            break;
+        case MOV_m16r1632_sreg:
+            {
+                uint32_t buff;
+                read_b(f, 1, &buff);
+                mod_rm((uint8_t*)&buff, inst);
+                set_mn(inst, "mov");
+
+                get_operands(f, inst, 0);
+                if(inst->description[0] == rm) inst->description[0] = m;
+                inst->operands[1] = inst->mrm.reg;
+                inst->description[1] = sreg;
+                inst->opernum = 2;
+            }
+            break;
+        case LEA_r1632_m:
+            {
+                uint32_t buff;
+                read_b(f, 1, &buff);
+                mod_rm((uint8_t*)&buff, inst);
+                set_mn(inst, "lea");
+
+                get_operands(f, inst, 1);
+                inst->operands[0] = inst->mrm.reg;
+                inst->description[0] = r;
+                inst->description[1] = m;
+                inst->opernum = 2;
+            }
+            break;
+        case MOV_sreg_rm16:
+            {
+                inst->op = 16;
+                uint32_t buff;
+                read_b(f, 1, &buff);
+                mod_rm((uint8_t*)&buff, inst);
+                set_mn(inst, "mov");
+
+                get_operands(f, inst, 1);
+                inst->operands[0] = inst->mrm.reg;
+                inst->description[0] = sreg;
+                inst->opernum = 2;
+            }
+            break;
+        case POP_rm1632:
+            {
+                uint32_t buff;
+                read_b(f, 1, &buff);
+                mod_rm((uint8_t*)&buff, inst);
+                set_mn(inst, "pop");
+
+                get_operands(f, inst, 0);
+                inst->opernum = 1;
+            }
+            break;
     }
 }
 
