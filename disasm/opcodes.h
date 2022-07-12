@@ -461,9 +461,21 @@ enum {
     bh
 };
 
+enum {
+    es,
+    cs,
+    ss,
+    ds,
+    fs,
+    gs,
+
+    sreg_c
+};
+
 extern const char reg32[reg_c][4];
 extern const char reg8[reg_c][3];
 extern const char rm16[][6];
 extern const char rm_ptr[][6];
+extern const char sreg_operand[sreg_c][3];
 
 #endif
