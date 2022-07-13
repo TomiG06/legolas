@@ -35,7 +35,7 @@ void get_sregister(char* buff, uint8_t num) {
 
 void display_instr(struct instr* inst) {
     //print prefixes
-    if(inst->rep)   printf("repe ");
+    if(inst->rep & !inst->f3_not_rep)   printf("repe ");
     if(inst->repn)  printf("repne ");
     if(inst->lock)  printf("lock ");
 

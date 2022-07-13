@@ -39,6 +39,9 @@ struct instr {
 
     uint8_t extended;
 
+    //check opcodes like 0x90 (PAUSE)
+    uint8_t f3_not_rep;
+
     //bytes
     struct MODRM mrm;
     struct SIB sb;
