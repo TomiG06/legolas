@@ -568,6 +568,27 @@ void set_instruction(FILE* f, struct instr* inst) {
                 inst->opernum = 1;
             }
             break;
+        case NOP:
+            set_mn(inst, inst->rep? "nop": "pause");
+            if(inst->rep) inst->f3_not_rep = 1;
+            break;
+ 
+        case XCHG_r1632_eax + ecx:
+        case XCHG_r1632_eax + edx:
+        case XCHG_r1632_eax + ebx:
+        case XCHG_r1632_eax + esp:
+        case XCHG_r1632_eax + ebp:
+        case XCHG_r1632_eax + esi:
+        case XCHG_r1632_eax + edi:
+            set_mn(inst, "xchg");
+            inst->operands[0] = inst->opcode - XCHG_r1632_eax;
+            inst->description[0] = r;
+            inst->operands[1] = eax;
+            inst->description[1] = r;
+            inst->opernum = 2;
+            break;
+             
+     
     }
 }
 
