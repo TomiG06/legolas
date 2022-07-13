@@ -231,6 +231,18 @@ void rm81632_imm81632(FILE* f, char* mnemonic, uint8_t is_rm8, uint8_t is_imm8, 
     inst->description[1] = imm;
 }
 
+void ptr1632(FILE* f, char* mnemonic, struct instr* inst) {
+    /*
+        1st operand: 32 bit part
+        2nd operand: 16 bit part
+    */
+    set_mn(inst, mnemonic);
+    read_b(f, 4, &inst->operands[0]);
+    read_b(f, 2, &inst->operands[1]);
+    inst->description[0] = ptr;
+    inst->opernum = 1;
+}
+
 void set_instruction(FILE* f, struct instr* inst) {
     switch(inst->opcode) {
         case ADD_rm8_r8:
@@ -581,11 +593,36 @@ void set_instruction(FILE* f, struct instr* inst) {
         case XCHG_r1632_eax + esi:
         case XCHG_r1632_eax + edi:
             set_mn(inst, "xchg");
-            inst->operands[0] = inst->opcode - XCHG_r1632_eax;
+            inst->operands[0] = inst->opcode & 7;
             inst->description[0] = r;
             inst->operands[1] = eax;
             inst->description[1] = r;
             inst->opernum = 2;
+            break;
+
+        case CBW:
+            set_mn(inst, inst->op == 16? "cbw": "cwde");
+            break;
+        case CWD:
+            set_mn(inst, inst->op == 16? "cwd": "cdq");
+            break;
+        case CALLF_ptr1632:
+            ptr1632(f, "call", inst);
+            break;
+        case FWAIT:
+            set_mn(inst, "fwait");
+            break;
+        case PUSHF:
+            set_mn(inst, "pushf");
+            break;
+        case POPF:
+            set_mn(inst, "popf");
+            break;
+        case SAHF:
+            set_mn(inst, "sahf");
+            break;
+        case LAHF:
+            set_mn(inst, "lahf");
             break;
              
      
