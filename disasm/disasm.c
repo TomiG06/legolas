@@ -624,14 +624,91 @@ void set_instruction(FILE* f, struct instr* inst) {
         case LAHF:
             set_mn(inst, "lahf");
             break;
-             
-     
+        case MOV_al_moffs8:
+        case MOV_eax_moffs1632: //Playing with bits
+        case MOV_moffs8_al:
+        case MOV_moffs1632_eax: 
+            {
+                uint8_t moffs_idx = !(inst->opcode & 2);
+                read_b(f, 4, &inst->operands[moffs_idx]);
+                inst->operands[!moffs_idx] = eax;
+
+                set_mn(inst, "mov");
+                if(inst->opcode&1) inst->op = 8;
+
+                inst->description[moffs_idx] = moffs;
+                inst->description[!moffs_idx] = r;
+                inst->opernum = 2;
+            }
+            break;
+        case MOVSB:
+            set_mn(inst, "movsb");
+            break;
+        case MOVSD:
+            set_mn(inst, inst->op == 32? "movsd": "movsw");
+            break;
+        case CMPSB:
+            set_mn(inst, "cmpsb");
+            break;
+        case CMPSD:
+            set_mn(inst, inst->op == 32? "cmpsd": "cmpsw");
+            break;
+        case TEST_al_imm8:
+        case TEST_eax_imm1632:
+            smth_aleax(f, "test", TEST_al_imm8, inst);
+            break;
+        case STOSB:
+            set_mn(inst, "stosb");
+            break;
+        case STOSD:
+            set_mn(inst, inst->op == 32? "stosd": "stosw");
+            break;
+        case LODSB:
+            set_mn(inst, "lodsb");
+            break;
+        case LODSD:
+            set_mn(inst, inst->op == 32? "lodsd": "lodsw");
+            break;
+        case SCASB:
+            set_mn(inst, "scasb");
+            break;
+        case SCASD:
+            set_mn(inst, inst->op == 32? "scasd": "scasw");
+            break;
+        case MOV_r8_imm8 + al:
+        case MOV_r8_imm8 + cl:
+        case MOV_r8_imm8 + dl:
+        case MOV_r8_imm8 + bl:
+        case MOV_r8_imm8 + ah:
+        case MOV_r8_imm8 + ch:
+        case MOV_r8_imm8 + dh:
+        case MOV_r8_imm8 + bh:
+        case MOV_r1632_imm1632 + eax:
+        case MOV_r1632_imm1632 + ecx:
+        case MOV_r1632_imm1632 + edx:
+        case MOV_r1632_imm1632 + ebx:
+        case MOV_r1632_imm1632 + esp:
+        case MOV_r1632_imm1632 + ebp:
+        case MOV_r1632_imm1632 + esi:
+        case MOV_r1632_imm1632 + edi:
+            set_mn(inst, "mov");
+
+            inst->operands[0] = inst->opcode & 7;
+            inst->description[0] = r;
+
+            if(inst->opcode < MOV_r1632_imm1632) inst->op = 8;
+
+            read_b(f, inst->op/8, &inst->operands[1]);
+            inst->description[1] = imm;
+            inst->opernum = 2;
+            break;
     }
 }
 
 void start_disassembly(FILE* f, uint32_t text_size) {
     while(counter < text_size) {
-        struct instr instruction = {32, 32, 0, 0, 0, 0, 0, 0, 0, 0};
+        //objdump uses ds sreg
+        struct instr instruction = {32, 32, SEG_DS, 0, 0, 0, 0, 0, 0, 0};
         
         //get prefixes
         set_prefixes(f, &instruction);
