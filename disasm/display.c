@@ -74,8 +74,8 @@ void display_instr(struct instr* inst) {
                         break;
                     case 32:
                         if(inst->hasSIB) {
-                            sprintf(buff, "%s%s+%s*%.0f", buff, reg32[inst->sb.base], reg32[inst->sb.index], pow(2, inst->sb.scale));
-                            if(inst->mrm.mod) sprintf(buff, "%s+0x%X", buff, inst->operands[i]);
+                            sprintf(buff, "%s%s%s%s*%.0f", buff, inst->mrm.mod || inst->sb.base != ebp? reg32[inst->sb.base]: "", inst->mrm.mod || inst->sb.base != ebp? "+": "", reg32[inst->sb.index], pow(2, inst->sb.scale));
+                            if(inst->mrm.mod || inst->sb.base == ebp) sprintf(buff, "%s+0x%X", buff, inst->operands[i]);
                             sprintf(buff, "%s]", buff);
                         } else {
                             if(!inst->mrm.mod) {
