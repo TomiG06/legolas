@@ -82,18 +82,7 @@ void sib(FILE* f, uint8_t rmidx, struct instr* inst) {
 
     inst->hasSIB = 1;
 
-    if(inst->sb.base == ebp) {
-        switch(inst->mrm.mod) {
-            case 0:
-            case 2:
-                read_b(f, 4, &inst->operands[rmidx]);
-                break;
-            case 1:
-                read_b(f, 1, &inst->operands[rmidx]);
-                break;
-        }
-
-    }
+    if(inst->sb.base == ebp && !inst->mrm.mod) read_b(f, 4, &inst->operands[rmidx]);
 }
 
 void set_mn(struct instr* i, char* mnemonic) { 
@@ -128,7 +117,7 @@ void get_operands(FILE* f, struct instr* inst, char rm_index) {
             case 1:
             case 2:
                 if(inst->mrm.rm == 4) sib(f, rm_index, inst);
-                read_b(f, inst->mrm.mod*2, &inst->operands[rm_index]);
+                read_b(f, (int)pow(inst->mrm.mod, 2), &inst->operands[rm_index]);
                 break;
             case 3:
                 inst->description[rm_index] = r;
