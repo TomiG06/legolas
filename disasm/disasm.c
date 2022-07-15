@@ -11,6 +11,7 @@
 
 static uint8_t prefixes[] = {OP_SIZE, ADDR_SIZE, REP_REPE, REPNE, LOCK, SEG_ES, SEG_CS, SEG_SS, SEG_DS, SEG_FS, SEG_GS, EXTENDED};
 static uint8_t eight_opcodes_rm_imm[] = {0x80, 0x81, 0x82, 0x83};
+static uint8_t two_opcodes_rm_imm[] = {0xC0, 0xC1};
 
 //Function to check if a number is in an array
 char contained(uint8_t el, uint8_t arr[], const size_t size) {
@@ -71,7 +72,7 @@ void mod_rm(FILE* f, struct instr* inst) {
 }
 
 //decode SIB byte
-void sib(FILE* f, struct instr* inst) {
+void sib(FILE* f, uint8_t rmidx, struct instr* inst) {
     uint32_t byte = 0;
     read_b(f, 1, &byte);
 
@@ -80,6 +81,19 @@ void sib(FILE* f, struct instr* inst) {
     inst->sb.base = byte & 7;
 
     inst->hasSIB = 1;
+
+    if(inst->sb.base == ebp) {
+        switch(inst->mrm.mod) {
+            case 0:
+            case 2:
+                read_b(f, 4, &inst->operands[rmidx]);
+                break;
+            case 1:
+                read_b(f, 1, &inst->operands[rmidx]);
+                break;
+        }
+
+    }
 }
 
 void set_mn(struct instr* i, char* mnemonic) { 
@@ -104,7 +118,7 @@ void get_operands(FILE* f, struct instr* inst, char rm_index) {
             case 0:
                 switch(inst->mrm.rm) {
                     case 4:
-                        sib(f, inst);
+                        sib(f, rm_index, inst);
                         break;
                     case 5:
                         read_b(f, 4, &inst->operands[rm_index]);
@@ -113,7 +127,7 @@ void get_operands(FILE* f, struct instr* inst, char rm_index) {
                 break;
             case 1:
             case 2:
-                if(inst->mrm.rm == 4) sib(f, inst);
+                if(inst->mrm.rm == 4) sib(f, rm_index, inst);
                 read_b(f, inst->mrm.mod*2, &inst->operands[rm_index]);
                 break;
             case 3:
@@ -220,6 +234,33 @@ void rm81632_imm81632(FILE* f, char* mnemonic, uint8_t is_rm8, uint8_t is_imm8, 
                 set_mn(inst, "cmp");
                 break;
         }
+    } else if(contained(inst->opcode, two_opcodes_rm_imm, sizeof(two_opcodes_rm_imm))) {
+        switch(inst->mrm.reg) {
+            case 0:
+                set_mn(inst, "rol");
+                break;
+            case 1:
+                set_mn(inst, "ror");
+                break;
+            case 2:
+                set_mn(inst, "rcl");
+                break;
+            case 3:
+                set_mn(inst, "rcr");
+                break;
+            case 4:
+                set_mn(inst, "shl");
+                break;
+            case 5:
+                set_mn(inst, "shr");
+                break;
+            case 6:
+                set_mn(inst, "sal");
+                break;
+            case 7:
+                set_mn(inst, "sar");
+                break;
+        }
     }
 
     if(is_rm8) inst->op = 8;
@@ -227,6 +268,7 @@ void rm81632_imm81632(FILE* f, char* mnemonic, uint8_t is_rm8, uint8_t is_imm8, 
     set_mn(inst, mnemonic);
 
     get_operands(f, inst, 0);
+    //printf("MOD: %d\nREG: %d\nRM: %d\n", inst->mrm.mod, inst->mrm.reg, inst->mrm.rm);
     read_b(f, is_imm8? 1: inst->op/8, &inst->operands[1]);
     inst->description[1] = imm;
 }
@@ -702,13 +744,67 @@ void set_instruction(FILE* f, struct instr* inst) {
             inst->description[1] = imm;
             inst->opernum = 2;
             break;
+
+        case 0xC0:
+        case 0xC1:
+            rm81632_imm81632(f, "", !(inst->opcode & 1), 1, inst);
+            break;
+        case RET:
+        case RET_imm16:
+            set_mn(inst, "ret");
+            if(!(inst->opcode & 1)) {
+                inst->opernum = 1;
+                read_b(f, 2, &inst->operands[0]);
+                inst->description[0] = imm;
+            }
+            break;
+        case LES_r1632_m1632:
+        case LDS_r1632_m1632:
+            r81632_rm81632(f, inst->opcode & 1? "lds": "les", 0, inst);
+            break;
+        case MOV_rm8_imm8:
+        case MOV_rm1632_imm1632:
+            rm81632_imm81632(f, "mov", !(inst->opcode&1), !(inst->opcode&1), inst);
+            break;
+        case ENTER_imm16_imm8:
+            set_mn(inst, "enter");
+            inst->opernum = 2;
+            inst->description[0] = imm;
+            inst->description[1] = imm;
+            read_b(f, 2, &inst->operands[0]);
+            read_b(f, 1, &inst->operands[1]);
+            break;
+        case LEAVE:
+            set_mn(inst, "leave");
+            break;
+        case RETF_imm16:
+        case RETF:
+            set_mn(inst, "retf");
+            if(!(inst->opcode&1)) {
+                read_b(f, 2, &inst->operands[0]);
+                inst->description[0] = imm;
+                inst->opernum = 1;
+            }
+            break;
+        case INT3:
+            set_mn(inst, "int3");
+            break;
+        case INT_imm8:
+            set_mn(inst, "int");
+            read_b(f, 1, &inst->operands[0]);
+            inst->description[0] = imm;
+            inst->opernum = 1;
+            break;
+        case INTO:
+        case IRET:
+            set_mn(inst, inst->opcode == IRET? "iret": "into");
+            break;
     }
 }
 
 void start_disassembly(FILE* f, uint32_t text_size) {
     while(counter < text_size) {
-        //objdump uses ds sreg
-        struct instr instruction = {32, 32, SEG_DS, 0, 0, 0, 0, 0, 0, 0};
+        struct instr instruction = {32, 32, 0, 0, 0, 0, 0, 0, 0, 0};
         
         //get prefixes
         set_prefixes(f, &instruction);
