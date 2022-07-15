@@ -188,24 +188,22 @@
 #define SCASD                       0xAF
 #define MOV_r8_imm8                 0xB0
 #define MOV_r1632_imm1632           0xB8
-#define ROL_rm8_imm8                0xC0
-#define ROR_rm8_imm8                0xC0
-#define RCL_rm8_imm8                0xC0
-#define RCR_rm8_imm8                0xC0
-#define SHL_rm8_imm8                0xC0
-#define SHR_rm8_imm8                0xC0
-#define SAL_rm8_imm8                0xC0
-#define SAR_rm8_imm8                0xC0
-#define ROL_rm1632_imm8             0xC1
-#define ROR_rm1632_imm8             0xC1
-#define RCL_rm1632_imm8             0xC1
-#define RCR_rm1632_imm8             0xC1
-#define SHL_rm1632_imm8             0xC1
-#define SHR_rm1632_imm8             0xC1
-#define SAL_rm1632_imm8             0xC1
-#define SAR_rm1632_imm8             0xC1
-#define RET                         0xC2
-#define RET_imm16                   0xC3
+
+/*
+    0xC0 (rm8_imm8)
+    0xC1 (rm1632_imm8)
+*/
+#define ROL                         0x00
+#define ROR                         0x01
+#define RCL                         0x02
+#define RCR                         0x03
+#define SHL                         0x04
+#define SHR                         0x05
+#define SAL                         0x06
+#define SAR                         0x07
+
+#define RET_imm16                   0xC2
+#define RET                         0xC3
 #define LES_r1632_m1632             0xC4
 #define LDS_r1632_m1632             0xC5
 #define MOV_rm8_imm8                0xC6
@@ -215,7 +213,7 @@
 #define RETF_imm16                  0xCA
 #define RETF                        0xCB
 #define INT3                        0xCC
-#define INT_imm16                   0xCD
+#define INT_imm8                    0xCD
 #define INTO                        0xCE
 #define IRET                        0xCF
 #define ROL_rm8_1                   0xD0
