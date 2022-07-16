@@ -51,12 +51,20 @@ void display_instr(struct instr* inst) {
     for(size_t i = 0; i < inst->opernum; i++) {
         switch(inst->description[i]) {
             case r:
-                strcpy(buff, reg32[inst->operands[i]]);
-                if(inst->op == 16) {
-                    for(size_t i = 0; i < 3; i++) buff[i] = buff[i+1];
-                } else if(inst->op == 8) {
-                    strcpy(buff, reg8[inst->operands[i]]);
-                    buff[2] = 0;
+                {
+                    uint8_t reg_size;
+                    if(inst->operands[i] < 8) reg_size = inst->op;
+                    else reg_size = pow(2, 2 + (inst->operands[i] >> 3));
+
+                    inst->operands[i] &= 7;
+                    
+                    strcpy(buff, reg32[inst->operands[i]]);
+                    if(reg_size == 16) {
+                        for(size_t i = 0; i < 3; i++) buff[i] = buff[i+1];
+                    } else if(reg_size == 8) {
+                        strcpy(buff, reg8[inst->operands[i]]);
+                        buff[2] = 0;
+                    }
                 }
                 break;
             case rm:
