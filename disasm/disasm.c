@@ -742,7 +742,7 @@ void set_instruction(FILE* f, struct instr* inst) {
                     inst->operands[1] = 1;
                 } else {
                     inst->description[1] = r;
-                    inst->operands[1] = r8 | cl; //On 0xD3 this prints ecx
+                    inst->operands[1] = r8 | cl;
                 }
             }
             break;

@@ -6,16 +6,6 @@
 #include "helf.h"
 #include "helpers.h"
 
-/*
-    The function below returns a string array
-    of the section headers
-
-    It first finds the location and size of
-    the section header table, it then reads the
-    contents of it and finally stores them in
-    a string array
-*/
-
 char** split0(char* str, char** array, size_t strsize) {
     str++;
     for(size_t i = 0; i < strsize; i++) {
@@ -26,6 +16,17 @@ char** split0(char* str, char** array, size_t strsize) {
         str++;
     }
 }
+
+/*
+    The function below returns a string array
+    of the section headers
+ 
+    It first finds the location and size of
+    the section header table, it then reads the
+    contents of it and finally stores them in
+    a string array
+*/
+
 
 char** extract_sheaders(Elf32_Ehdr* elf_h, FILE* f) {
     uint32_t sh_loc, sh_size;
