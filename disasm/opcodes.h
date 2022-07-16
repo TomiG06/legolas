@@ -102,43 +102,20 @@
 #define JLE_rel8                    0x7E
 #define JNLE_rel8                   0x7F
 
-//0x80                              R/M 
-#define ADD_rm8_imm8                0x00
-#define OR_rm8_imm8                 0x01
-#define ADC_rm8_imm8                0x02
-#define SBB_rm8_imm8                0x03
-#define AND_rm8_imm8                0x04
-#define SUB_rm8_imm8                0x05
-#define XOR_rm8_imm8                0x06
-#define CMP_rm8_imm8                0x07
-
-//0x81
-#define ADD_rm1632_imm1632          0x00
-#define OR_rm1632_imm1632           0x01
-#define ADC_rm1632_imm1632          0x02
-#define SBB_rm1632_imm1632          0x03
-#define AND_rm1632_imm1632          0x04
-#define SUB_rm1632_imm1632          0x05
-#define XOR_rm1632_imm1632          0x06
-#define CMP_rm1632_imm1632          0x07
 /*
-#define ADD_rm8_imm8                0x82    For some reason
-#define OR_rm8_imm8                 0x82    these opcodes are
-#define ADC_rm8_imm8                0x82    the same as 0x80
-#define SBB_rm8_imm8                0x82
-#define AND_rm8_imm8                0x82
-#define SUB_rm8_imm8                0x82
-#define XOR_rm8_imm8                0x82
+    0x80
+    0x81
+    0x82
+    0x83
 */
-//0x83
-#define ADD_rm1632_imm8             0x00
-#define OR_rm1632_imm8              0x01
-#define ADC_rm1632_imm8             0x02
-#define SBB_rm1632_imm8             0x03
-#define AND_rm1632_imm8             0x04
-#define SUB_rm1632_imm8             0x05
-#define XOR_rm1632_imm8             0x06
-#define CMP_rm1632_imm8             0x07
+#define ADD                         0x00
+#define OR                          0x01
+#define ADC                         0x02
+#define SBB                         0x03
+#define AND                         0x04
+#define SUB                         0x05
+#define XOR                         0x06
+#define CMP                         0x07
 
 #define TEST_rm8_r8                 0x84
 #define TEST_rm1632_r1632           0x85
@@ -192,6 +169,10 @@
 /*
     0xC0 (rm8_imm8)
     0xC1 (rm1632_imm8)
+    0xD0 (rm8_1)
+    0xD1 (rm1632_1)
+    0xD2 (rm8_cl)
+    0xD3 (rm1632_cl)
 */
 #define ROL                         0x00
 #define ROR                         0x01
@@ -216,38 +197,6 @@
 #define INT_imm8                    0xCD
 #define INTO                        0xCE
 #define IRET                        0xCF
-#define ROL_rm8_1                   0xD0
-#define ROR_rm8_1                   0xD0
-#define RCL_rm8_1                   0xD0
-#define RCR_rm8_1                   0xD0
-#define SHL_rm8_1                   0xD0
-#define SHR_rm8_1                   0xD0
-#define SAL_rm8_1                   0xD0
-#define SAR_rm8_1                   0xD0
-#define ROL_rm1632_1                0xD1
-#define ROR_rm1632_1                0xD1
-#define RCL_rm1632_1                0xD1
-#define RCR_rm1632_1                0xD1
-#define SHL_rm1632_1                0xD1
-#define SHR_rm1632_1                0xD1
-#define SAL_rm1632_1                0xD1
-#define SAR_rm1632_1                0xD1
-#define ROL_rm8_cl                  0xD2
-#define ROR_rm8_cl                  0xD2
-#define RCL_rm8_cl                  0xD2
-#define RCR_rm8_cl                  0xD2
-#define SHL_rm8_cl                  0xD2
-#define SHR_rm8_cl                  0xD2
-#define SAL_rm8_cl                  0xD2
-#define SAR_rm8_cl                  0xD2
-#define ROL_rm1632_cl               0xD3
-#define ROR_rm1632_cl               0xD3
-#define RCL_rm1632_cl               0xD3
-#define RCR_rm1632_cl               0xD3
-#define SHL_rm1632_cl               0xD3
-#define SHR_rm1632_cl               0xD3
-#define SAL_rm1632_cl               0xD3
-#define SAR_rm1632_cl               0xD3
 #define AAM_imm8                    0xD4
 #define AAD_imm8                    0xD5
 #define SALC                        0xD6
