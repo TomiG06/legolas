@@ -15,6 +15,19 @@ enum {
     sti
 };
 
+/*
+    indicates register size
+    (bitmask)
+
+    if size is the same as instruction.op
+    then there is no need for it
+*/
+enum {
+    r8 = 8,
+    r16,
+    r32
+};
+
 
 struct SIB {
     uint8_t scale:2;

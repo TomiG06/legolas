@@ -10,8 +10,6 @@
 #include "helpers.h"
 
 static uint8_t prefixes[] = {OP_SIZE, ADDR_SIZE, REP_REPE, REPNE, LOCK, SEG_ES, SEG_CS, SEG_SS, SEG_DS, SEG_FS, SEG_GS, EXTENDED};
-static uint8_t eight_opcodes_rm_imm[] = {0x80, 0x81, 0x82, 0x83};
-static uint8_t two_opcodes_rm_imm[] = {0xC0, 0xC1};
 
 //Function to check if a number is in an array
 char contained(uint8_t el, uint8_t arr[], const size_t size) {
@@ -193,71 +191,15 @@ void stack_seg(struct instr* inst, char* mnemonic, uint8_t seg) {
 }
 
 void rm81632_imm81632(FILE* f, char* mnemonic, uint8_t is_rm8, uint8_t is_imm8, struct instr* inst) {
-    mod_rm(f, inst);
+    /*
+        modrm must already be fetched
+    */
     inst->opernum = 2;
-
-    if(contained(inst->opcode, eight_opcodes_rm_imm, sizeof(eight_opcodes_rm_imm))) {
-        switch(inst->mrm.reg) {
-            case 0:
-                set_mn(inst, "add");
-                break;
-            case 1:
-                set_mn(inst, "or");
-                break;
-            case 2:
-                set_mn(inst, "adc");
-                break;
-            case 3:
-                set_mn(inst, "sbb");
-                break;
-            case 4:
-                set_mn(inst, "and");
-                break;
-            case 5:
-                set_mn(inst, "sub");
-                break;
-            case 6:
-                set_mn(inst, "xor");
-                break;
-            case 7:
-                set_mn(inst, "cmp");
-                break;
-        }
-    } else if(contained(inst->opcode, two_opcodes_rm_imm, sizeof(two_opcodes_rm_imm))) {
-        switch(inst->mrm.reg) {
-            case 0:
-                set_mn(inst, "rol");
-                break;
-            case 1:
-                set_mn(inst, "ror");
-                break;
-            case 2:
-                set_mn(inst, "rcl");
-                break;
-            case 3:
-                set_mn(inst, "rcr");
-                break;
-            case 4:
-                set_mn(inst, "shl");
-                break;
-            case 5:
-                set_mn(inst, "shr");
-                break;
-            case 6:
-                set_mn(inst, "sal");
-                break;
-            case 7:
-                set_mn(inst, "sar");
-                break;
-        }
-    }
-
     if(is_rm8) inst->op = 8;
 
     set_mn(inst, mnemonic);
 
     get_operands(f, inst, 0);
-    //printf("MOD: %d\nREG: %d\nRM: %d\n", inst->mrm.mod, inst->mrm.reg, inst->mrm.rm);
     read_b(f, is_imm8? 1: inst->op/8, &inst->operands[1]);
     inst->description[1] = imm;
 }
@@ -540,16 +482,38 @@ void set_instruction(FILE* f, struct instr* inst) {
             break;
         
         case 0x80:
-        case 0x82:
-            rm81632_imm81632(f, "", 1, 1, inst);
-            break;
         case 0x81:
-            rm81632_imm81632(f, "", 0, 0, inst);
-            break;
+        case 0x82:
         case 0x83:
-            rm81632_imm81632(f, "", 0, 1, inst);
+            mod_rm(f, inst);
+            switch(inst->mrm.reg) {
+                case 0:
+                    set_mn(inst, "add");
+                    break;
+                case 1:
+                    set_mn(inst, "or");
+                    break;
+                case 2:
+                    set_mn(inst, "adc");
+                    break;
+                case 3:
+                    set_mn(inst, "sbb");
+                    break;
+                case 4:
+                    set_mn(inst, "and");
+                    break;
+                case 5:
+                    set_mn(inst, "sub");
+                    break;
+                case 6:
+                    set_mn(inst, "xor");
+                    break;
+                case 7:
+                    set_mn(inst, "cmp");
+                    break;
+            }
+            rm81632_imm81632(f, "", !(inst->opcode&1), inst->opcode != 0x81, inst);
             break;
-
         case TEST_rm8_r8:
         case TEST_rm1632_r1632:
             rm81632_r81632(f, "test", TEST_rm8_r8, inst);
@@ -733,10 +697,54 @@ void set_instruction(FILE* f, struct instr* inst) {
             inst->description[1] = imm;
             inst->opernum = 2;
             break;
-
         case 0xC0:
         case 0xC1:
-            rm81632_imm81632(f, "", !(inst->opcode & 1), 1, inst);
+        case 0xD0:
+        case 0xD1:
+        case 0xD2:
+        case 0xD3:
+            mod_rm(f, inst);
+            switch(inst->mrm.reg) {
+                case 0:
+                    set_mn(inst, "rol");
+                    break;
+                case 1:
+                    set_mn(inst, "ror");
+                    break;
+                case 2:
+                    set_mn(inst, "rcl");
+                    break;
+                case 3:
+                    set_mn(inst, "rcr");
+                    break;
+                case 4:
+                    set_mn(inst, "shl");
+                    break;
+                case 5:
+                    set_mn(inst, "shr");
+                    break;
+                case 6:
+                    set_mn(inst, "sal");
+                    break;
+                case 7:
+                    set_mn(inst, "sar");
+                    break;
+            }
+            if(inst->opcode <= 0xC1) rm81632_imm81632(f, "", !(inst->opcode & 1), 1, inst);
+            else {
+                get_operands(f, inst, 0);
+                inst->opernum = 2;
+
+                if(!(inst->opcode & 1)) inst->op = 8;
+
+                if(inst->opcode < 0xD2) {
+                    inst->description[1] = imm;
+                    inst->operands[1] = 1;
+                } else {
+                    inst->description[1] = r;
+                    inst->operands[1] = r8 | cl; //On 0xD3 this prints ecx
+                }
+            }
             break;
         case RET:
         case RET_imm16:
