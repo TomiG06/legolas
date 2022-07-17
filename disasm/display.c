@@ -101,6 +101,9 @@ void display_instr(struct instr* inst) {
             case sreg:
                 strcpy(buff, sreg_operand[inst->operands[i]]);
                 break;
+            case sti:
+                sprintf(buff, "st%d", inst->operands[i]);
+                break;
             case ptr:
                 sprintf(buff, "0x%X:0x%X", inst->operands[i+1], inst->operands[i]);
                 break;
