@@ -139,6 +139,11 @@ void get_operands(FILE* f, struct instr* inst, char rm_index) {
     }
 }
 
+void get_imm(FILE* f, struct instr* inst, uint8_t size, uint8_t imm_idx) {
+    read_b(f, size, &inst->operands[imm_idx]);
+    inst->description[imm_idx] = imm;
+}
+
 
 void rm81632_r81632(FILE* f, char* mnemonic, uint8_t rm8_r8_op, struct instr* inst) {
     if(inst->opcode == rm8_r8_op) inst->op = 8;
@@ -172,14 +177,13 @@ void smth_aleax(FILE* f, char* mnemonic, uint8_t imm8, struct instr* inst) {
     inst->operands[0] = eax;
 
     inst->description[0] = r;
-    inst->description[1] = imm;
     inst->opernum = 2;
     
     set_mn(inst, mnemonic);
 
     if(inst->opcode == imm8) inst->op = 8;
 
-    read_b(f, inst->op/8, &inst->operands[1]);
+    get_imm(f, inst, inst->op/8, 1);
 }
 
 //Stuck instructions used with seg registers
@@ -200,8 +204,7 @@ void rm81632_imm81632(FILE* f, char* mnemonic, uint8_t is_rm8, uint8_t is_imm8, 
     set_mn(inst, mnemonic);
 
     get_operands(f, inst, 0);
-    read_b(f, is_imm8? 1: inst->op/8, &inst->operands[1]);
-    inst->description[1] = imm;
+    get_imm(f, inst, is_imm8? 1: inst->op/8, 1);
 }
 
 void ptr1632(FILE* f, char* mnemonic, struct instr* inst) {
@@ -410,22 +413,19 @@ void set_instruction(FILE* f, struct instr* inst) {
             break;
         case PUSH_imm1632:
             set_mn(inst, "push");
-            read_b(f, 4, &inst->operands[0]);
-            inst->description[0] = imm;
+            get_imm(f, inst, 4, 0);
             inst->opernum = 1;
             break;
         case IMUL_r1632_rm1632_imm1632:
         case IMUL_r1632_rm1632_imm8:
             //its really the same, just with a 3rd immediate operand
             r81632_rm81632(f, "imul", 0, inst);
-            read_b(f, inst->opcode == IMUL_r1632_rm1632_imm8? 1 : 4, &inst->operands[2]);
-            inst->description[2] = imm;
+            get_imm(f, inst, inst->opcode == IMUL_r1632_rm1632_imm8? 1: 4, 2);
             inst->opernum = 3;
             break;
         case PUSH_imm8:
             set_mn(inst, "push");
-            read_b(f, 1, &inst->operands[0]);
-            inst->description[0] = imm;
+            get_imm(f, inst, 1, 0);
             break;
         case INSB:
             set_mn(inst, "insb");
@@ -693,8 +693,7 @@ void set_instruction(FILE* f, struct instr* inst) {
 
             if(inst->opcode < MOV_r1632_imm1632) inst->op = 8;
 
-            read_b(f, inst->op/8, &inst->operands[1]);
-            inst->description[1] = imm;
+            get_imm(f, inst, inst->op/8, 1);
             inst->opernum = 2;
             break;
         case 0xC0:
@@ -751,8 +750,7 @@ void set_instruction(FILE* f, struct instr* inst) {
             set_mn(inst, "ret");
             if(!(inst->opcode & 1)) {
                 inst->opernum = 1;
-                read_b(f, 2, &inst->operands[0]);
-                inst->description[0] = imm;
+                get_imm(f, inst, 2, 0);
             }
             break;
         case LES_r1632_m1632:
@@ -766,10 +764,8 @@ void set_instruction(FILE* f, struct instr* inst) {
         case ENTER_imm16_imm8:
             set_mn(inst, "enter");
             inst->opernum = 2;
-            inst->description[0] = imm;
-            inst->description[1] = imm;
-            read_b(f, 2, &inst->operands[0]);
-            read_b(f, 1, &inst->operands[1]);
+            get_imm(f, inst, 2, 0);
+            get_imm(f, inst, 1, 1);
             break;
         case LEAVE:
             set_mn(inst, "leave");
@@ -778,8 +774,7 @@ void set_instruction(FILE* f, struct instr* inst) {
         case RETF:
             set_mn(inst, "retf");
             if(!(inst->opcode&1)) {
-                read_b(f, 2, &inst->operands[0]);
-                inst->description[0] = imm;
+                get_imm(f, inst, 2, 0);
                 inst->opernum = 1;
             }
             break;
@@ -788,13 +783,25 @@ void set_instruction(FILE* f, struct instr* inst) {
             break;
         case INT_imm8:
             set_mn(inst, "int");
-            read_b(f, 1, &inst->operands[0]);
-            inst->description[0] = imm;
+            get_imm(f, inst, 1, 0);
             inst->opernum = 1;
             break;
         case INTO:
         case IRET:
             set_mn(inst, inst->opcode == IRET? "iret": "into");
+            break;
+        case AAM_imm8:
+            set_mn(inst, "aam");
+        case AAD_imm8:
+            set_mn(inst, "aad");
+            get_imm(f, inst, 1, 0);
+            inst->opernum = 1;
+            break;
+        case SALC:
+            set_mn(inst, "salc");
+            break;
+        case XLATB:
+            set_mn(inst, "xlatb");
             break;
     }
 }
