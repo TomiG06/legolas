@@ -803,6 +803,44 @@ void set_instruction(FILE* f, struct instr* inst) {
         case XLATB:
             set_mn(inst, "xlatb");
             break;
+        case 0xD8:
+            mod_rm(f, inst);
+
+            switch(inst->mrm.reg) {
+                case FADD:
+                    set_mn(inst, "fadd");
+                    break;
+                case FMUL:
+                    set_mn(inst, "fmul");
+                    break;
+                case FCOM:
+                    set_mn(inst, "fcom");
+                    break;
+                case FCOMP:
+                    set_mn(inst, "fcomp");
+                    break;
+                case FSUB:
+                    set_mn(inst, "fsub");
+                    break;
+                case FSUBR:
+                    set_mn(inst, "fsubr");
+                    break;
+                case FDIV:
+                    set_mn(inst, "fdiv");
+                    break;
+                case FDIVR:
+                    set_mn(inst, "fdivr");
+                    break;
+            }
+
+            get_operands(f, inst, 0);
+
+            if(inst->description[0] == r) inst->description[0] = sti;
+            else inst->description[0] = m;
+
+            inst->opernum = 1;
+
+            break;
     }
 }
 
