@@ -201,15 +201,17 @@
 #define AAD_imm8                    0xD5
 #define SALC                        0xD6
 #define XLATB                       0xD7
-#define FADD_m32real_sti            0xD8
-#define FMUL                        0xD8
-#define FCOM_st_stim32real          0xD8
-#define FCOMP_st_stim32real         0xD8
-#define FCOMP_st_st1                0xD8
-#define FSUB_m32realsti             0xD8
-#define FSUBR_m32realsti            0xD8
-#define FDIV_m32realsti             0xD8
-#define FDIVR_m32realsti            0xD8
+
+//0xD8
+#define FADD                        0x00
+#define FMUL                        0x01
+#define FCOM                        0x02
+#define FCOMP                       0x03
+#define FSUB                        0x04
+#define FSUBR                       0x05
+#define FDIV                        0x06
+#define FDIVR                       0x07
+
 #define FLD_stim32real              0xD9
 #define FXCH_sti                    0xD9
 #define FST_m32real                 0xD9
