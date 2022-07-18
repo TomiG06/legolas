@@ -261,19 +261,21 @@
 #define FCOS                        0xFF
 //else FNSTCW
 
-#define FIADD_m32int                0xDA
-#define FCMOVB_sti                  0xDA
-#define FIMUL_m32int                0xDA
-#define FCMOVE_sti                  0xDA
-#define FCOM_m32int                 0xDA
-#define FCMOVBE_sti                 0xDA
-#define FICOMP_m32int               0xDA
-#define FCMOVU_sti                  0xDA
-#define FISUB_m32int                0xDA
-#define FISIBR_m32int               0xDA
-#define FUCOMPP_st1                 0xDA
-#define FIDIV_m32int                0xDA
-#define FIDIVR_m32int               0xDA
+//0xDA
+#define FIADD                       0x00
+#define FCMOVB                      0x00
+#define FIMUL                       0x01
+#define FCMOVE                      0x01
+#define FCOM                        0x02
+#define FCMOVBE                     0x02
+#define FICOMP                      0x03
+#define FCMOVU                      0x03
+#define FISUB                       0x04
+#define FISIBR                      0x05
+#define FUCOMPP                     0x05
+#define FIDIV                       0x06
+#define FIDIVR                      0x07
+
 #define FILD_m32int                 0xDB
 #define FCMOVNB_sti                 0xDB
 #define FISTTP_m32int               0xDB

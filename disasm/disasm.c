@@ -1006,6 +1006,42 @@ void set_instruction(FILE* f, struct instr* inst) {
                     break;
             }
             break;
+        case 0xDA:
+            mod_rm(f, inst);
+            get_operands(f, inst, 0);
+
+            switch(inst->mrm.reg) {
+                case 0:
+                    if(inst->description[0] == r) set_mn(inst, "fcmovb");
+                    else set_mn(inst, "fiadd");
+                case 1:
+                    if(inst->description[0] == r) set_mn(inst, "fcmove");
+                    else set_mn(inst, "fimul");
+                case 2:
+                    if(inst->description[0] == r) set_mn(inst, "fcmovbe");
+                    else set_mn(inst, "ficom");
+                case 3:
+                    if(inst->description[0] == r) set_mn(inst, "fcmovu");
+                    else set_mn(inst, "ficomp");
+                case 5:
+                    if(asm_modrm(inst) == 0xE9) {
+                        set_mn(inst, "fucompp");
+                        break;
+                    }
+                    set_mn(inst, "fisubr");
+                case FISUB:
+                    set_mn(inst, "fisub");
+                case FIDIV:
+                    set_mn(inst, "fidiv");
+                case FIDIVR:
+                    set_mn(inst, "fidivr");
+                    inst->opernum = 1;
+                    setfdesc(inst);
+                    break;
+                    
+            }
+            break;
+
     }
 }
 
