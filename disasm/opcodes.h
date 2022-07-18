@@ -276,25 +276,10 @@
 #define FIDIV                       0x06
 #define FIDIVR                      0x07
 
-#define FILD_m32int                 0xDB
-#define FCMOVNB_sti                 0xDB
-#define FISTTP_m32int               0xDB
-#define FCMOVNE_sti                 0xDB
-#define FIST_m32int                 0xDB
-#define FCMOVNBE_sti                0xDB
-#define FISTP_m32int                0xDB
-#define FCMOVNU_sti                 0xDB
-#define FNENI                       0xDB
-#define FNDISI                      0xDB
-#define FNCLEX                      0xDB
-#define FCLEX                       0xDB
-#define FNINIT                      0xDB
-#define FINIT                       0xDB
-#define FNSETPM                     0xDB
-#define FLD_m80real                 0xDB
-#define FUCOMI_sti                  0xDB
-#define FCOMI_sti                   0xDB
-#define FSTP_m80real                0xDB
+//0xDB
+#define FCOMI                       0x06
+#define FSTP_DB                     0x07
+
 #define FADD_m64real                0xDC
 #define FMUL_m64real                0xDC
 #define FCOM_m64real                0xDC

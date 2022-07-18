@@ -1041,6 +1041,53 @@ void set_instruction(FILE* f, struct instr* inst) {
                     
             }
             break;
+        case 0xDB:
+            mod_rm(f, inst);
+            get_operands(f, inst, 0);
+
+            switch(inst->mrm.reg) {
+                case 0:
+                    if(inst->description[0] == r) set_mn(inst, "fcmovnb");
+                    else set_mn(inst, "fild");
+                case 1:
+                    if(inst->description[0] == r) set_mn(inst, "fcmovne");
+                    else set_mn(inst, "fisttp");
+                case 2:
+                    if(inst->description[0] == r) set_mn(inst, "fcmovnbe");
+                    else set_mn(inst, "fist");
+                case 3:
+                    if(inst->description[0] == r) set_mn(inst, "fcmovnu");
+                    else set_mn(inst, "fistp");
+                case 5:
+                    if(inst->description[0] == r) set_mn(inst, "fucomi");
+                    else set_mn(inst, "fid");
+                case FCOMI:
+                    set_mn(inst, "fcomi");
+                case FSTP_DB:
+                    set_mn(inst, "fstp");
+                    inst->opernum = 1;
+                    setfdesc(inst);
+                    break;
+                case 4:
+                    switch(asm_modrm(inst)) {
+                        case 0xE0:
+                            set_mn(inst, "fneni");
+                            break;
+                        case 0xE1:
+                            set_mn(inst, "fndisi");
+                            break;
+                        case 0xE2:
+                            set_mn(inst, "fnclex");
+                            break;
+                        case 0xE3:
+                            set_mn(inst, "fninit");
+                            break;
+                        case 0xE4:
+                            set_mn(inst, "fnsetpm");
+                            break;
+                    }
+                    break;
+            }
 
     }
 }
