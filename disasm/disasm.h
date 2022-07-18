@@ -4,6 +4,19 @@
 #include <stdint.h>
 
 //operand descriptions
+
+/*
+    To be added:
+        m16
+        m14/28
+        m32real
+        m64real
+        m80real
+        m64int
+        m16int
+        m94/108
+*/
+
 enum {
     r = 1,
     rm,
