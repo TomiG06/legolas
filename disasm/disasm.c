@@ -83,6 +83,7 @@ void sib(FILE* f, uint8_t rmidx, struct instr* inst) {
     if(inst->sb.base == ebp && !inst->mrm.mod) read_b(f, 4, &inst->operands[rmidx]);
 }
 
+//Sets mnemonic if not already set
 void set_mn(struct instr* i, char* mnemonic) { 
     if(!i->mnem_is_set) {
         strcpy(i->mnemonic, mnemonic);
@@ -90,6 +91,7 @@ void set_mn(struct instr* i, char* mnemonic) {
     }
 }
 
+//Set description (not really used)
 void set_desc(struct instr* inst, char* desc) { strcpy(inst->description, desc); }
 
 void get_operands(FILE* f, struct instr* inst, char rm_index) {
@@ -139,12 +141,13 @@ void get_operands(FILE* f, struct instr* inst, char rm_index) {
     }
 }
 
+//Fetch immediate operand and assign immediate description
 void get_imm(FILE* f, struct instr* inst, uint8_t size, uint8_t imm_idx) {
     read_b(f, size, &inst->operands[imm_idx]);
     inst->description[imm_idx] = imm;
 }
 
-
+//opcdes with rm_r operands
 void rm81632_r81632(FILE* f, char* mnemonic, uint8_t rm8_r8_op, struct instr* inst) {
     if(inst->opcode == rm8_r8_op) inst->op = 8;
 
@@ -159,6 +162,7 @@ void rm81632_r81632(FILE* f, char* mnemonic, uint8_t rm8_r8_op, struct instr* in
     get_operands(f, inst, 0);
 }
 
+//opcodes with r_rm operands
 void r81632_rm81632(FILE* f, char* mnemonic, uint8_t r8_rm8_op, struct instr* inst) {
     mod_rm(f, inst);
     inst->opernum = 2;
@@ -173,6 +177,7 @@ void r81632_rm81632(FILE* f, char* mnemonic, uint8_t r8_rm8_op, struct instr* in
     get_operands(f, inst,1);
 }
 
+//opcodes with (al or eax)_imm operands
 void smth_aleax(FILE* f, char* mnemonic, uint8_t imm8, struct instr* inst) {
     inst->operands[0] = eax;
 
@@ -194,6 +199,7 @@ void stack_seg(struct instr* inst, char* mnemonic, uint8_t seg) {
     inst->opernum = 1;
 }
 
+//opcodes with rm_imm operands
 void rm81632_imm81632(FILE* f, char* mnemonic, uint8_t is_rm8, uint8_t is_imm8, struct instr* inst) {
     /*
         modrm must already be fetched
@@ -209,6 +215,8 @@ void rm81632_imm81632(FILE* f, char* mnemonic, uint8_t is_rm8, uint8_t is_imm8, 
 
 void ptr1632(FILE* f, char* mnemonic, struct instr* inst) {
     /*
+        sets ptr16:32 operands
+
         1st operand: 32 bit part
         2nd operand: 16 bit part
     */
@@ -219,6 +227,7 @@ void ptr1632(FILE* f, char* mnemonic, struct instr* inst) {
     inst->opernum = 1;
 }
 
+//set description for floating point arithmetic (?) instructions
 void setfdesc(struct instr* inst) {
     for(size_t i = 0; i < inst->opernum; i++) {
         if(inst->description[i] == r) inst->description[i] = sti;
@@ -226,8 +235,10 @@ void setfdesc(struct instr* inst) {
     }
 }
 
+//assemble Mod R/M byte
 uint8_t asm_modrm(struct instr* inst) { return (inst->mrm.mod << 6) | (inst->mrm.reg << 3) | inst->mrm.rm; }
 
+//Check opcode and set mnemonic/operands accordingly
 void set_instruction(FILE* f, struct instr* inst) {
     switch(inst->opcode) {
         case ADD_rm8_r8:
