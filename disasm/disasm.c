@@ -901,7 +901,111 @@ void set_instruction(FILE* f, struct instr* inst) {
                             setfdesc(inst);
                             break;
                     }
+                    break;
+                case 5:
+                    switch(asm_modrm(inst)) {
+                        case FLD1:
+                            set_mn(inst, "fld1");
+                            break;
+                        case FLDL2T:
+                            set_mn(inst, "fldl2t");
+                            break;
+                        case FLDL2E:
+                            set_mn(inst, "fldl2e");
+                            break;
+                        case FLDPI:
+                            set_mn(inst, "fldpi");
+                            break;
+                        case FLDLG2:
+                            set_mn(inst, "fldlg2");
+                            break;
+                        case FLDLN2:
+                            set_mn(inst, "fldln2");
+                            break;
+                        case FLDZ:
+                            set_mn(inst, "fldz");
+                            break;
+                        default:
+                            //FLDCW
+                            set_mn(inst, "fldcw");
+                            get_operands(f, inst, 0);
+                            inst->opernum = 1;
+                            setfdesc(inst);
+                            break;
+                    }
+                    break;
+                case 6:
+                    switch(asm_modrm(inst)) {
+                        case F2XM1:
+                            set_mn(inst, "f2xm1");
+                            break;
+                        case FYL2X:
+                            set_mn(inst, "fyl2x");
+                            break;
+                        case FPTAN:
+                            set_mn(inst, "fptan");
+                            break;
+                        case FPATAN:
+                            set_mn(inst, "fpatan");
+                            break;
+                        case FXTRACT:
+                            set_mn(inst, "fxtract");
+                            break;
+                        case FPREM1:
+                            set_mn(inst, "fprem1");
+                            break;
+                        case FDECSTP:
+                            set_mn(inst, "fdecstp");
+                            break;
+                        case FINCSTP:
+                            set_mn(inst, "fincstp");
+                            break;
+                        default:
+                            //FNSTENV
+                            set_mn(inst, "fnstenv");
+                            get_operands(f, inst, 0);
+                            inst->opernum = 1;
+                            setfdesc(inst);
+                            break;
+                    }
+                    break;
+                case 7:
+                    switch(asm_modrm(inst)) {
+                        case FPREM:
+                            set_mn(inst, "fprem");
+                            break;
+                        case FYL2XP1:
+                            set_mn(inst, "fyl2xp1");
+                            break;
+                        case FSQRT:
+                            set_mn(inst, "fsqrt");
+                            break;
+                        case FSINCOS:
+                            set_mn(inst, "fsincos");
+                            break;
+                        case FRNDINT:
+                            set_mn(inst, "frndint");
+                            break;
+                        case FSCALE:
+                            set_mn(inst, "fscale");
+                            break;
+                        case FSIN:
+                            set_mn(inst, "fsin");
+                            break;
+                        case FCOS:
+                            set_mn(inst, "fcos");
+                            break;
+                        default:
+                            //FNSTCW
+                            set_mn(inst, "fnstcw");
+                            get_operands(f, inst, 0);
+                            inst->opernum = 1;
+                            setfdesc(inst);
+                            break;
+                    }
+                    break;
             }
+            break;
     }
 }
 

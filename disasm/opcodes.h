@@ -229,34 +229,38 @@
 #define FXAM                        0xE5
 //else FLDENV
 
-#define FLDCW_m16                   0xD9
-#define FLD1                        0xD9
-#define FLDL2T                      0xD9
-#define FLDL2E                      0xD9
-#define FLDPI                       0xD9
-#define FLDLG2                      0xD9
-#define FLDLN2                      0xD9
-#define FLDZ                        0xD9
-#define FSTENV_m1428                0xD9
-#define FNSTENV_m1428               0xD9
-#define F2XM1                       0xD9
-#define FYL2X                       0xD9
-#define FPTAN                       0xD9
-#define FPATAN                      0xD9
-#define FXTRACT                     0xD9
-#define FPREM1                      0xD9
-#define FDECSTP                     0xD9
-#define FINCSTP                     0xD9
-#define FNSTCW_m16                  0xD9
-#define FSTCW_m16                   0xD9
-#define FPREM                       0xD9
-#define FYL2XP1                     0xD9
-#define FSQRT                       0xD9
-#define FSINCOS                     0xD9
-#define FRNDINT                     0xD9
-#define FSCALE                      0xD9
-#define FSIN                        0xD9
-#define FCOS                        0xD9
+    //0x5
+#define FLD1                        0xE8
+#define FLDL2T                      0xE9
+#define FLDL2E                      0xEA
+#define FLDPI                       0xEB
+#define FLDLG2                      0xEC
+#define FLDLN2                      0xED
+#define FLDZ                        0xEE
+//else FLDCW
+
+    //0x6
+#define F2XM1                       0xF0
+#define FYL2X                       0xF1
+#define FPTAN                       0xF2
+#define FPATAN                      0xF3
+#define FXTRACT                     0xF4
+#define FPREM1                      0xF5
+#define FDECSTP                     0xF6
+#define FINCSTP                     0xF7
+//else FNSTENV
+
+    //0x7
+#define FPREM                       0xF8
+#define FYL2XP1                     0xF9
+#define FSQRT                       0xFA
+#define FSINCOS                     0xFB
+#define FRNDINT                     0xFC
+#define FSCALE                      0xFD
+#define FSIN                        0xFE
+#define FCOS                        0xFF
+//else FNSTCW
+
 #define FIADD_m32int                0xDA
 #define FCMOVB_sti                  0xDA
 #define FIMUL_m32int                0xDA
