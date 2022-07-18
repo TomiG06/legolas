@@ -219,6 +219,15 @@ void ptr1632(FILE* f, char* mnemonic, struct instr* inst) {
     inst->opernum = 1;
 }
 
+void setfdesc(struct instr* inst) {
+    for(size_t i = 0; i < inst->opernum; i++) {
+        if(inst->description[i] == r) inst->description[i] = sti;
+        else if(inst->description[i] == rm) inst->description[i] = m;
+    }
+}
+
+uint8_t asm_modrm(struct instr* inst) { return (inst->mrm.mod << 6) | (inst->mrm.reg << 3) | inst->mrm.rm; }
+
 void set_instruction(FILE* f, struct instr* inst) {
     switch(inst->opcode) {
         case ADD_rm8_r8:
@@ -834,13 +843,54 @@ void set_instruction(FILE* f, struct instr* inst) {
             }
 
             get_operands(f, inst, 0);
-
-            if(inst->description[0] == r) inst->description[0] = sti;
-            else inst->description[0] = m;
-
             inst->opernum = 1;
+            setfdesc(inst);
 
             break;
+        case 0xD9:
+            mod_rm(f, inst);
+            switch(inst->mrm.reg) {
+                case FLD:
+                    set_mn(inst, "fld");
+                case FXCH:
+                    set_mn(inst, "fxch");
+                case 2:
+                    if(inst->mrm.reg == 2 && asm_modrm(inst) == FNOP) {
+                        set_mn(inst, "fnop");
+                        break;
+                    }
+                    
+                    //FST
+                    set_mn(inst, "fst");
+                case FSTP:
+                    set_mn(inst, "fstp");
+                    get_operands(f, inst, 0);
+                    inst->opernum = 1;
+                    setfdesc(inst);
+                    break;
+                case 4:
+                    switch(asm_modrm(inst)) {
+                        case FACHS:
+                            set_mn(inst, "fchs");
+                            break;
+                        case FABS:
+                            set_mn(inst, "fabs");
+                            break;
+                        case FTST:
+                            set_mn(inst, "ftst");
+                            break;
+                        case FXAM:
+                            set_mn(inst, "fxam");
+                            break;
+                        default:
+                            //FLDENV
+                            set_mn(inst, "fldenv");
+                            get_operands(f, inst, 0);
+                            inst->opernum = 1;
+                            setfdesc(inst);
+                            break;
+                    }
+            }
     }
 }
 
