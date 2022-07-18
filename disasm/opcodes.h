@@ -212,16 +212,23 @@
 #define FDIV                        0x06
 #define FDIVR                       0x07
 
-#define FLD_stim32real              0xD9
-#define FXCH_sti                    0xD9
-#define FST_m32real                 0xD9
-#define FNOP                        0xD9
-#define FSTP_m32real                0xD9
-#define FLDENV_m1418                0xD9
-#define FACHS                       0xD9
-#define FABS                        0xD9
-#define FTST                        0xD9
-#define FXAM                        0xD9
+/*
+    0xD9
+*/
+#define FLD                         0x00
+#define FXCH                        0x01
+    //0x2
+#define FNOP                        0xD0
+//else FST
+
+#define FSTP                        0x03
+    //0x4
+#define FACHS                       0xE0
+#define FABS                        0xE1
+#define FTST                        0xE4
+#define FXAM                        0xE5
+//else FLDENV
+
 #define FLDCW_m16                   0xD9
 #define FLD1                        0xD9
 #define FLDL2T                      0xD9
