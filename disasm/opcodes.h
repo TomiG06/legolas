@@ -202,7 +202,10 @@
 #define SALC                        0xD6
 #define XLATB                       0xD7
 
-//0xD8
+/*
+    0xD8
+    0xDC
+*/
 #define FADD                        0x00
 #define FMUL                        0x01
 #define FCOM                        0x02
@@ -280,28 +283,14 @@
 #define FCOMI                       0x06
 #define FSTP_DB                     0x07
 
-#define FADD_m64real                0xDC
-#define FMUL_m64real                0xDC
-#define FCOM_m64real                0xDC
-#define FCOMP_m64real               0xDC
-#define FSUB_m64real                0xDC
-#define FSUBR_m64real               0xDC
-#define FDIV_m64real                0xDC
-#define FDIVR_m64real               0xDC
-#define FLD_m64real                 0xDD
-#define FFREE_sti                   0xDD
-#define FISTTP_m64int               0xDD
-#define FST_m64real                 0xDD
-#define FST_sti                     0xDD
-#define FSTP_m64real                0xDD
-#define FSTP_sti                    0xDD
-#define FRSTOR_st                   0xDD
-#define FUCOM_sti                   0xDD
-#define FUCOMP_sti                  0xDD
-#define FNSAVE_st                   0xDD
-#define FSAVE_st                    0xDD
-#define FNSTSW_m16                  0xDD
-#define FSTSW_m16                   0xDD
+//0xDD
+#define FISTTP                      0x01
+#define FST                         0x02
+#define FSTP                        0x03
+#define FUCOMP                      0x05
+#define FNSAVE                      0x06
+#define FNSTSW_DD                   0x07
+
 #define FIADD_m16int                0xDE
 #define FADDP_sti                   0xDE
 #define FIMUL_m16int                0xDE

@@ -824,6 +824,7 @@ void set_instruction(FILE* f, struct instr* inst) {
             set_mn(inst, "xlatb");
             break;
         case 0xD8:
+        case 0xDC:
             mod_rm(f, inst);
 
             switch(inst->mrm.reg) {
@@ -852,6 +853,8 @@ void set_instruction(FILE* f, struct instr* inst) {
                     set_mn(inst, "fdivr");
                     break;
             }
+
+            if(inst->opcode == 0xDC) inst->op = 64;
 
             get_operands(f, inst, 0);
             inst->opernum = 1;
@@ -1087,8 +1090,43 @@ void set_instruction(FILE* f, struct instr* inst) {
                             break;
                     }
                     break;
+            };
+           break;
+        case 0xDD:
+            mod_rm(f, inst);
+            get_operands(f, inst, 0);
+
+            switch(inst->mrm.reg) {
+                case 0:
+                    if(inst->description[0] == r) set_mn(inst, "ffree");
+                    else set_mn(inst, "fld");
+                case FISTTP:
+                    set_mn(inst, "fisttp");
+                    break;
+                case FST:
+                    set_mn(inst, "fst");
+                    break;
+                case FSTP:
+                    set_mn(inst, "fstp");
+                    break;
+                case 4:
+                    if(inst->description[0] == r) set_mn(inst, "frstor");
+                    else set_mn(inst, "fucom");
+                    break;
+                case FUCOMP:
+                    set_mn(inst, "fucomp");
+                    break;
+                case FNSAVE:
+                    set_mn(inst, "fnsave");
+                    break;
+                case FNSTSW_DD:
+                    set_mn(inst, "fnstsw");
+                    break;
             }
 
+            inst->opernum = 1;
+            setfdesc(inst);
+            break;
     }
 }
 
