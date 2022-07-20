@@ -205,6 +205,7 @@
 /*
     0xD8
     0xDC
+    0xDE (partialy)
 */
 #define FADD                        0x00
 #define FMUL                        0x01
@@ -291,21 +292,6 @@
 #define FNSAVE                      0x06
 #define FNSTSW_DD                   0x07
 
-#define FIADD_m16int                0xDE
-#define FADDP_sti                   0xDE
-#define FIMUL_m16int                0xDE
-#define FMULP_sti                   0xDE
-#define FICOM_m16int                0xDE
-#define FICOMP_m16int               0xDE
-#define FCOMPP                      0xDE
-#define FISUB_m16int                0xDE
-#define FSUBRP_sti                  0xDE
-#define FISUBR_m16int               0xDE
-#define FSUBP_sti                   0xDE
-#define FIDIV_m16int                0xDE
-#define FDIVRP_sti                  0xDE
-#define FIDIVR_m16int               0xDE
-#define FDIVP_sti                   0xDE
 #define FILD_m16int                 0xDF
 #define FFREEP_sti                  0xDF
 #define FISTTP_m16int               0xDF

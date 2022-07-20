@@ -1015,17 +1015,13 @@ void set_instruction(FILE* f, struct instr* inst) {
 
             switch(inst->mrm.reg) {
                 case 0:
-                    if(inst->description[0] == r) set_mn(inst, "fcmovb");
-                    else set_mn(inst, "fiadd");
+                    set_mn(inst, inst->description[0] == r? "fcmovb": "fiadd");
                 case 1:
-                    if(inst->description[0] == r) set_mn(inst, "fcmove");
-                    else set_mn(inst, "fimul");
+                    set_mn(inst, inst->description[0] == r? "fcmove": "fimul");
                 case 2:
-                    if(inst->description[0] == r) set_mn(inst, "fcmovbe");
-                    else set_mn(inst, "ficom");
+                    set_mn(inst, inst->description[0] == r? "fcmovbe": "ficom");
                 case 3:
-                    if(inst->description[0] == r) set_mn(inst, "fcmovu");
-                    else set_mn(inst, "ficomp");
+                    set_mn(inst, inst->description[0] == r? "fcmovu": "ficomp");
                 case 5:
                     if(asm_modrm(inst) == 0xE9) {
                         set_mn(inst, "fucompp");
@@ -1125,6 +1121,41 @@ void set_instruction(FILE* f, struct instr* inst) {
             }
 
             inst->opernum = 1;
+            setfdesc(inst);
+            break;
+
+        case 0xDE:
+            mod_rm(f, inst);
+            get_operands(f, inst, 0);
+            inst->opernum = 1;
+
+            switch(inst->mrm.reg) {
+                case FADD:
+                    set_mn(inst, inst->description[0] == r? "faddp": "fiadd");
+                    break;
+                case FMUL:
+                    set_mn(inst, inst->description[0] == r? "fmulp": "fimul");
+                    break;
+                case FCOM:
+                    set_mn(inst, "ficom");
+                    break;
+                case FCOMP:
+                    set_mn(inst, inst->description[0] == r? "fcompp": "ficomp");
+                    break;
+                case FSUB:
+                    set_mn(inst, inst->description[0] == r? "fsubrp": "fisub");
+                    break;
+                case FSUBR:
+                    set_mn(inst, inst->description[0] == r? "fsubp": "fisubr");
+                    break;
+                case FDIV:
+                    set_mn(inst, inst->description[0] == r? "fdivrp": "fidiv");
+                    break;
+                case FDIVR:
+                    set_mn(inst, inst->description[0] == r? "fdivp": "fidivr");
+                    break;
+            }
+
             setfdesc(inst);
             break;
     }
