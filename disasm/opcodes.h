@@ -292,19 +292,11 @@
 #define FNSAVE                      0x06
 #define FNSTSW_DD                   0x07
 
-#define FILD_m16int                 0xDF
-#define FFREEP_sti                  0xDF
-#define FISTTP_m16int               0xDF
-#define FIST_m16int                 0xDF
-#define FISTP_m16int                0xDF
-#define FBLD_m80dec                 0xDF
-#define FNSTSW                      0xDF
-#define FSTSW                       0xDF
-#define FILD_m64int                 0xDF
-#define FUCOMIP_sti                 0xDF
-#define FBSTP_m80dec                0xDF
-#define FCOMIP_sti                  0xDF
-#define FISTP_m64int                0xDF
+//0xDF
+#define FIST                        0x02
+#define FISTP16                     0x03
+#define FISTP64                     0x07
+
 #define LOOPNZ_rel8                 0xE0
 #define LOOPZ_ecx_rel8              0xE1
 #define LOOP_ecx_rel8               0xE2

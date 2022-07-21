@@ -1158,6 +1158,42 @@ void set_instruction(FILE* f, struct instr* inst) {
 
             setfdesc(inst);
             break;
+
+        case 0xDF:
+            mod_rm(f, inst);
+            get_operands(f, inst, 0);
+            inst->opernum = 1;
+
+            switch(inst->mrm.reg) {
+                case 0:
+                    set_mn(inst, inst->description[0] == r? "ffreep": "fild");
+                    break;
+                case FISTTP:
+                    set_mn(inst, "fisttp");
+                    break;
+                case FIST:
+                    set_mn(inst, "fist");
+                    break;
+                case FISTP16:
+                    set_mn(inst, "fistp");
+                    break;
+                case 4:
+                    set_mn(inst, inst->description[0] == r? "fnstsw": "fbld");
+                    break;
+                case 5:
+                    set_mn(inst, inst->description[0] == r? "fucomip": "fild");
+                    break;
+                case 6:
+                    set_mn(inst, inst->description[0] == r? "fcomip": "fbstp");
+                    break;
+                case FISTP64:
+                    set_mn(inst, "fistp");
+                    break;
+            }
+
+            if(asm_modrm(inst) == 0xE0 && inst->mrm.reg == 4) inst->op = 16;
+            else setfdesc(inst);
+            break;
     }
 }
 
