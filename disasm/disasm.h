@@ -25,6 +25,7 @@ enum {
     sreg,
     ptr,
     moffs,
+    rel,
     sti
 };
 
@@ -36,9 +37,9 @@ enum {
     then there is no need for it
 */
 enum {
-    r8 = 8,
-    r16,
-    r32
+    r8  = 1 << 3,
+    r16 = 2 << 3,
+    r32 = 3 << 3
 };
 
 

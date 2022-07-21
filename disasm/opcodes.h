@@ -298,8 +298,8 @@
 #define FISTP64                     0x07
 
 #define LOOPNZ_rel8                 0xE0
-#define LOOPZ_ecx_rel8              0xE1
-#define LOOP_ecx_rel8               0xE2
+#define LOOPZ_rel8                  0xE1
+#define LOOP_rel8                   0xE2
 #define JECXZ_rel8                  0xE3
 #define IN_al_imm8                  0xE4
 #define IN_eax_imm8                 0xE5
@@ -313,6 +313,7 @@
 #define IN_eax_dx                   0xED
 #define OUT_dx_al                   0xEE
 #define OUT_dx_eax                  0xEF
+
 #define LOCK                        0xF0
 #define INT1                        0xF1
 #define REPNE                       0xF2

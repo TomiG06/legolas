@@ -1194,6 +1194,72 @@ void set_instruction(FILE* f, struct instr* inst) {
             if(asm_modrm(inst) == 0xE0 && inst->mrm.reg == 4) inst->op = 16;
             else setfdesc(inst);
             break;
+
+        case LOOPNZ_rel8:
+            set_mn(inst, "loopnz");
+        case LOOPZ_rel8:
+            set_mn(inst, "loopz");
+        case LOOP_rel8:
+            set_mn(inst, "loop");
+        case JECXZ_rel8:
+            set_mn(inst, inst->addr == 32? "jecxz": "jcxz");
+            read_b(f, 1, &inst->operands[0]);
+            inst->description[0] = rel;
+            inst->opernum = 1;
+            break;
+        case IN_al_imm8:
+        case IN_eax_imm8:
+            set_mn(inst, "in");
+            get_imm(f, inst, 1, 1);
+            if(!(inst->opcode&1)) inst->op = 8;
+            inst->description[0] = r;
+            inst->opernum = 2;
+            break;
+        case OUT_imm8_al:
+        case OUT_imm8_eax:
+            set_mn(inst, "out");
+            get_imm(f, inst, 1, 0);
+            if(!(inst->opcode&1)) inst->op = 8;
+            inst->description[1] = r;
+            inst->operands[1] = eax;
+            inst->opernum = 2;
+            break;
+        case CALL_rel1632:
+        case JMP_rel8:
+        case JMP_rel1632:
+            read_b(f, inst->opcode != JMP_rel8? 4: 1, &inst->operands[0]);
+            inst->description[0] = rel;
+            set_mn(inst, inst->opcode&1? "jmp": "call");
+            inst->opernum = 1;
+            break;
+        case JMP_ptr16col1632:
+            ptr1632(f, "jmp", inst);
+            break;
+        case IN_al_dx:
+        case IN_eax_dx:
+            set_mn(inst, "in");
+            inst->description[0] = r;
+            inst->operands[0] = eax;
+            if(!(inst->opcode&1)) inst->op = 8;
+
+            inst->description[1] = r;
+            inst->operands[1] = r16 | edx;
+
+            inst->opernum = 2;
+            break;
+        case OUT_dx_al:
+        case OUT_dx_eax:
+            set_mn(inst, "out");
+            inst->description[0] = r;
+            inst->operands[0] = r16 | edx;
+
+            inst->description[1] = r;
+            inst->operands[1] = eax;
+            if(!(inst->opcode&1)) inst->op = 8;
+
+            inst->opernum = 2;
+            break;
+            
     }
 }
 
