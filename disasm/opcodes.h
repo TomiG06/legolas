@@ -320,35 +320,39 @@
 #define REP_REPE                    0xF3
 #define HLT                         0xF4
 #define CMC                         0xF5
-#define TEST_rm8_imm8               0xF6
-#define NOT_rm8                     0xF6
-#define NEG_rm8                     0xF6
-#define MUL_rm8                     0xF6
-#define IMUL_rm8                    0xF6
-#define DIV_rm8                     0xF6
-#define IDIV_rm8                    0xF6
-#define TEST_rm1632_imm1632         0xF7
-#define NOT_rm1632                  0xF7
-#define NEG_rm1632                  0xF7
-#define MUL_rm1632                  0xF7
-#define IMUL_rm1632                 0xF7
-#define DIV_rm1632                  0xF7
-#define IDIV_rm1632                 0xF7
+
+/*
+    0xF6
+    0xF7
+*/
+#define TEST                        0x00
+#define NOT                         0x02
+#define NEG                         0x03
+#define MUL                         0x04
+#define IMUL                        0x05
+#define DIV                         0x06
+#define IDIV                        0x07
+
 #define CLC                         0xF8
 #define STC                         0xF9
 #define CLI                         0xFA
 #define STI                         0xFB
 #define CLD                         0xFC
 #define STD                         0xFD
-#define INC_rm8                     0xFE
-#define DEC_rm8                     0xFE
-#define INC_rm1632                  0xFF
-#define DEC_rm1632                  0xFF
-#define CALL_rm1632                 0xFF
-#define CALL_m16col1632             0xFF
-#define JMP_m16col1632              0xFF
-#define JMP_rm1632                  0xFF
-#define PUSH_rm1632                 0xFF
+
+/*
+    0xFE
+    0xFF
+*/
+#define INC                         0x00
+#define DEC                         0x01
+
+//0xFF
+#define CALL_FF                     0x02
+#define CALLF_FF                    0x03
+#define JMP_FF                      0x04
+#define JMPF_FF                     0x05
+#define PUSH                        0x06
 
 
 enum {

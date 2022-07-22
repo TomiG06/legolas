@@ -1259,7 +1259,92 @@ void set_instruction(FILE* f, struct instr* inst) {
 
             inst->opernum = 2;
             break;
+        case INT1:
+            set_mn(inst, "int1");
+            break;
+        case HLT:
+            set_mn(inst, "hlt");
+            break;
+        case CMC:
+            set_mn(inst, "cmc");
+            break;
+        case 0xF6:
+            inst->op = 8;
+        case 0xF7:
+            mod_rm(f, inst);
+            get_operands(f, inst, 0);
+            inst->opernum = 1;
+            switch(inst->mrm.reg) {
+                case TEST:
+                case 1:
+                    set_mn(inst, "test");
+                    get_imm(f, inst, inst->op/8, 1);
+                    inst->opernum = 2;
+                    break;
+                case NOT:
+                    set_mn(inst, "not");
+                    break;
+                case NEG:
+                    set_mn(inst, "neg");
+                    break;
+                case MUL:
+                    set_mn(inst, "mul");
+                    break;
+                case IMUL:
+                    set_mn(inst, "imul");
+                    break;
+                case DIV:
+                    set_mn(inst, "div");
+                    break;
+                case IDIV:
+                    set_mn(inst, "idiv");
+                    break;
+            }
+            break;
+        case CLC:
+            set_mn(inst, "clc");
+            break;
+        case STC:
+            set_mn(inst, "stc");
+            break;
+        case CLI:
+            set_mn(inst, "cli");
+            break;
+        case STI:
+            set_mn(inst, "sti");
+            break;
+        case CLD:
+            set_mn(inst, "cld");
+            break;
+        case STD:
+            set_mn(inst, "std");
+            break;
+        case 0xFE:
+            inst->op = 8;
+        case 0xFF:
+            mod_rm(f, inst);
+            get_operands(f, inst, 0);
+            inst->opernum = 1;
             
+            switch(inst->mrm.reg) {
+                case INC:
+                    set_mn(inst, "inc");
+                    break;
+                case DEC:
+                    set_mn(inst, "dec");
+                    break;
+                case CALL_FF:
+                case CALLF_FF:
+                    set_mn(inst, "call");
+                    break;
+                case JMP_FF:
+                case JMPF_FF:
+                    set_mn(inst, "jmp");
+                    break;
+                case PUSH:
+                    set_mn(inst, "push");
+                    break;
+            }
     }
 }
 
