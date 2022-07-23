@@ -1356,16 +1356,23 @@ void set_instruction(FILE* f, struct instr* inst) {
 
 void start_disassembly(FILE* f, uint32_t text_size) {
     while(counter < text_size) {
-        struct instr instruction = {32, 32, 0, 0, 0, 0, 0, 0, 0, 0};
+// Keeping this just in case
+//        struct instr instruction = {32, 32, 0, 0, 0, 0, 0, 0, 0, 0};
+        struct instr* instruction = (struct instr*) calloc(sizeof(struct instr), 1);
+
+        if(!instruction) malloc_fail_and_exit();
+        instruction->op = instruction->addr = 32;
         
         //get prefixes
-        set_prefixes(f, &instruction);
+        set_prefixes(f, instruction);
 
         //set instruction
-        set_instruction(f, &instruction);
+        set_instruction(f, instruction);
 
         //display instruction
-        display_instr(&instruction);
+        display_instr(instruction);
+
+        free(instruction);
     }
 }
 
