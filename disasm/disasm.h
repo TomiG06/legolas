@@ -5,18 +5,6 @@
 
 //operand descriptions
 
-/*
-    To be added:
-        m16
-        m14/28
-        m32real
-        m64real
-        m80real
-        m64int
-        m16int
-        m94/108
-*/
-
 enum {
     r = 1,
     rm,
@@ -26,7 +14,12 @@ enum {
     ptr,
     moffs,
     rel,
-    sti
+    sti,
+    m16,
+    m32,
+    m64,
+    m80,
+    far
 };
 
 /*
@@ -92,3 +85,4 @@ struct instr {
 void start_disassembly(FILE* f, uint32_t text_size);
 
 #endif
+

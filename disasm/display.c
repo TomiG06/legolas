@@ -33,6 +33,20 @@ void get_sregister(char* buff, uint8_t num) {
     }
 }
 
+const char* get_ptr_type(struct instr* inst, uint8_t idx) {
+    uint8_t size = inst->op;
+
+    if(inst->description[idx] == m64) size = 64;
+    if(inst->description[idx] == m16) size = 16;
+
+    if(inst->description[idx] == m80 || inst->description[idx] == far) return inst->description[idx] == m80? "tbyte": "fword";
+
+     if(inst->description[idx] == m) return "";
+
+     return rm_ptr[(int)log2(size)-3];
+
+}
+
 void display_instr(struct instr* inst) {
     //print prefixes
     if(inst->rep & !inst->f3_not_rep)   printf("repe ");
@@ -69,7 +83,12 @@ void display_instr(struct instr* inst) {
                 break;
             case rm:
             case m:
-                sprintf(buff, "%s[%s%s", inst->description[i] == rm? rm_ptr[(int)log2(inst->op)-3]: "", sreg_buff, inst->seg? ":": "");
+            case m16:
+            case m32:
+            case m64:
+            case m80:
+            case far:
+                sprintf(buff, "%s[%s%s", get_ptr_type(inst, i), sreg_buff, inst->seg? ":": "");
 
                 switch(inst->addr) {
                     case 16:

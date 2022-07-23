@@ -228,10 +228,10 @@ void ptr1632(FILE* f, char* mnemonic, struct instr* inst) {
 }
 
 //set description for floating point arithmetic (?) instructions
-void setfdesc(struct instr* inst) {
+void setfdesc(struct instr* inst, uint8_t rm_replacement) {
     for(size_t i = 0; i < inst->opernum; i++) {
         if(inst->description[i] == r) inst->description[i] = sti;
-        else if(inst->description[i] == rm) inst->description[i] = m;
+        else if(inst->description[i] == rm) inst->description[i] = rm_replacement;
     }
 }
 
@@ -858,7 +858,7 @@ void set_instruction(FILE* f, struct instr* inst) {
 
             get_operands(f, inst, 0);
             inst->opernum = 1;
-            setfdesc(inst);
+            setfdesc(inst, inst->opcode == 0xD8? m32: m64);
 
             break;
         case 0xD9:
@@ -880,7 +880,7 @@ void set_instruction(FILE* f, struct instr* inst) {
                     set_mn(inst, "fstp");
                     get_operands(f, inst, 0);
                     inst->opernum = 1;
-                    setfdesc(inst);
+                    setfdesc(inst, m32);
                     break;
                 case 4:
                     switch(asm_modrm(inst)) {
@@ -901,7 +901,7 @@ void set_instruction(FILE* f, struct instr* inst) {
                             set_mn(inst, "fldenv");
                             get_operands(f, inst, 0);
                             inst->opernum = 1;
-                            setfdesc(inst);
+                            setfdesc(inst, m);
                             break;
                     }
                     break;
@@ -933,7 +933,7 @@ void set_instruction(FILE* f, struct instr* inst) {
                             set_mn(inst, "fldcw");
                             get_operands(f, inst, 0);
                             inst->opernum = 1;
-                            setfdesc(inst);
+                            setfdesc(inst, m16);
                             break;
                     }
                     break;
@@ -968,7 +968,7 @@ void set_instruction(FILE* f, struct instr* inst) {
                             set_mn(inst, "fnstenv");
                             get_operands(f, inst, 0);
                             inst->opernum = 1;
-                            setfdesc(inst);
+                            setfdesc(inst, m);
                             break;
                     }
                     break;
@@ -1003,7 +1003,7 @@ void set_instruction(FILE* f, struct instr* inst) {
                             set_mn(inst, "fnstcw");
                             get_operands(f, inst, 0);
                             inst->opernum = 1;
-                            setfdesc(inst);
+                            setfdesc(inst, m16);
                             break;
                     }
                     break;
@@ -1035,7 +1035,7 @@ void set_instruction(FILE* f, struct instr* inst) {
                 case FIDIVR:
                     set_mn(inst, "fidivr");
                     inst->opernum = 1;
-                    setfdesc(inst);
+                    setfdesc(inst, m32);
                     break;
                     
             }
@@ -1065,7 +1065,7 @@ void set_instruction(FILE* f, struct instr* inst) {
                 case FSTP_DB:
                     set_mn(inst, "fstp");
                     inst->opernum = 1;
-                    setfdesc(inst);
+                    setfdesc(inst, inst->mrm.reg < 5? m32: m80);
                     break;
                 case 4:
                     switch(asm_modrm(inst)) {
@@ -1121,7 +1121,8 @@ void set_instruction(FILE* f, struct instr* inst) {
             }
 
             inst->opernum = 1;
-            setfdesc(inst);
+            if(inst->mrm.reg == 7) setfdesc(inst, m16);
+            else setfdesc(inst, inst->opcode == 6? m: m64);
             break;
 
         case 0xDE:
@@ -1156,7 +1157,7 @@ void set_instruction(FILE* f, struct instr* inst) {
                     break;
             }
 
-            setfdesc(inst);
+            setfdesc(inst, m16);
             break;
 
         case 0xDF:
@@ -1192,7 +1193,8 @@ void set_instruction(FILE* f, struct instr* inst) {
             }
 
             if(asm_modrm(inst) == 0xE0 && inst->mrm.reg == 4) inst->op = 16;
-            else setfdesc(inst);
+            else if(inst->mrm.reg < 4) setfdesc(inst, m16);
+            else setfdesc(inst, inst->mrm.reg == 6 || inst->mrm.reg == 4? m80: m64);
             break;
 
         case LOOPNZ_rel8:
@@ -1345,6 +1347,10 @@ void set_instruction(FILE* f, struct instr* inst) {
                     set_mn(inst, "push");
                     break;
             }
+
+            if(inst->mrm.reg == CALLF_FF ||
+               inst->mrm.reg == JMPF_FF  ) inst->description[0] = far;
+               break;
     }
 }
 
