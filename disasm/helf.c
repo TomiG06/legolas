@@ -18,37 +18,29 @@ char** split0(char* str, char** array, size_t strsize) {
 }
 
 /*
-    The function below returns a string array
-    of the section headers
- 
-    It first finds the location and size of
-    the section header table, it then reads the
-    contents of it and finally stores them in
-    a string array
+    The function below reads a string from a file 
+    and splits it using NULL as delimiter
+
+    used in shstrtab and strtab
 */
 
 
-char** extract_sheaders(Elf32_Ehdr* elf_h, FILE* f) {
-    uint32_t sh_loc, sh_size;
-    fseek(f, SEQ_EL(elf_h->e_shstrndx-1), SEEK_SET);
-    fread(&sh_loc, sizeof(uint32_t), 1, f);
-    fread(&sh_size, sizeof(uint32_t), 1, f);
+char** read_str(FILE* f, size_t loc, size_t size, size_t len) {
+    char* buff = (char*) malloc(size);
+    char** ret = (char**) malloc(len * sizeof(char*));
 
-    char* section_headers = (char*) malloc(sh_size);
+    if(!buff || !ret) malloc_fail_and_exit();
 
-    char** sh = (char**) malloc(elf_h->e_shnum * sizeof(char*));
-    if(!section_headers || !sh) malloc_fail_and_exit();
+    fseek(f, loc, SEEK_SET);
+    fread(buff, sizeof(char), size, f);
+    split0(buff, ret, len);
 
-    fseek(f, sh_loc, SEEK_SET);
-    fread(section_headers, sizeof(char), sh_size, f);
-    split0(section_headers, sh, elf_h->e_shnum);
-
-    return sh;
+    return ret;
 }
 
 //This function returns the index of a section, or -1 if the section does not exist
-int16_t shindexof(char* str, char** sh, Elf32_Ehdr* hdr) {
-    for(int16_t x = 0; x < hdr->e_shnum; x++) if(!strcmp(str, sh[x])) return x;
+int16_t index_of_str(char* str, char** array, size_t len) {
+    for(int16_t x = 0; x < len; x++) if(!strcmp(str, array[x])) return x;
     return -1;
 }
 

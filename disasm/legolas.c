@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <stdint.h>
 #include <string.h>
 #include <unistd.h>
@@ -50,29 +51,43 @@ int main(int argc, char* argv[]) {
         return 1;
     }
 
-    char** sh = extract_sheaders(&hdr, f);
-    int16_t text_index = shindexof(".text", sh, &hdr);
-    int16_t symtab_index = shindexof(".symtab", sh, &hdr);
+    //Read section headers
 
-    if(text_index < 0) {
+    //Creating an array where section header data will be stored
+    Elf32_Shdr* section_headers = malloc(sizeof(Elf32_Shdr) * hdr.e_shnum);
+
+    //Go to the start of the section header table
+    fseek(f, hdr.e_shoff, SEEK_SET);
+
+    //Read and store section headers
+    for(size_t i = 0; i < hdr.e_shnum; i++) fread(&section_headers[i], sizeof(Elf32_Shdr), 1, f);
+
+    char** sh = read_str(f, section_headers[hdr.e_shstrndx].sh_offset, section_headers[hdr.e_shstrndx].sh_size, hdr.e_shnum);
+
+
+    /*
+        NASM elf contains an empty sheader
+        not visible on the shstrtab, so for
+        the time being these will be +1
+    */
+    int16_t dottext_index = index_of_str(".text", sh, hdr.e_shnum) + 1;
+    int16_t symtab_index = index_of_str(".symtab", sh, hdr.e_shnum) + 1;
+
+
+    if(dottext_index < 0) {
         printf(".text section not found\n");
         return 1;
     }
 
-    uint32_t loc = 0, size = 0;
-
+    /*
     fseek(f, SEQ_EL(symtab_index), SEEK_SET); //Some day
     fread(&loc, sizeof(uint32_t), 1, f);
     fread(&size, sizeof(uint32_t), 1, f);
-
+    */
     
-    fseek(f, SEQ_EL(text_index), SEEK_SET);
-    fread(&loc, sizeof(uint32_t), 1, f);
-    fread(&size, sizeof(uint32_t), 1, f);
+    fseek(f, section_headers[dottext_index].sh_offset, SEEK_SET);
 
-    fseek(f, loc, SEEK_SET);
-
-    start_disassembly(f, size);
+    start_disassembly(f, section_headers[dottext_index].sh_size);
 
     fclose(f);
     return 0;
