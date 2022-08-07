@@ -95,10 +95,10 @@ int main(int argc, char* argv[]) {
 
     //Read .strtab
     char* strtab = malloc(section_headers[dotstrtab_index].sh_size);
-
     fseek(f, section_headers[dotstrtab_index].sh_offset, SEEK_SET);
     fread(strtab, section_headers[dotstrtab_index].sh_size, 1, f);
 
+    //Filter out symbols that belong in .text
     size_t text_syms_count = 0;
     for(size_t i = 0; i < entries; i++) if(symtab[i].st_shndx == dottext_index && !ELF32_ST_TYPE(symtab[i].st_info)) text_syms_count++;
 
@@ -106,6 +106,7 @@ int main(int argc, char* argv[]) {
 
     for(size_t i = 0, c = 0; i < entries; i++) if(symtab[i].st_shndx == dottext_index && !ELF32_ST_TYPE(symtab[i].st_info)) dottext_syms[c++] = symtab[i];
     
+    //Go to the beginning of .text
     fseek(f, section_headers[dottext_index].sh_offset, SEEK_SET);
 
     start_disassembly(f, section_headers[dottext_index].sh_size, strtab, dottext_syms, text_syms_count);
