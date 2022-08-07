@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include <string.h>
+#include <elf.h>
 #include <math.h>
 
 #include "disasm.h"
@@ -1354,10 +1355,8 @@ void set_instruction(FILE* f, struct instr* inst) {
     }
 }
 
-void start_disassembly(FILE* f, uint32_t text_size) {
+void start_disassembly(FILE* f, uint32_t text_size, char* strtab, Elf32_Sym* text_syms, size_t ts_count) {
     while(counter < text_size) {
-// Keeping this just in case
-//        struct instr instruction = {32, 32, 0, 0, 0, 0, 0, 0, 0, 0};
         struct instr* instruction = (struct instr*) calloc(sizeof(struct instr), 1);
 
         if(!instruction) malloc_fail_and_exit();

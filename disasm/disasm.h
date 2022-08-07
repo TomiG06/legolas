@@ -2,6 +2,7 @@
 #define DISASSEMBLE_H
 
 #include <stdint.h>
+#include <elf.h>
 
 //operand descriptions
 
@@ -82,7 +83,7 @@ struct instr {
     uint32_t operands[4];
 };
 
-void start_disassembly(FILE* f, uint32_t text_size);
+void start_disassembly(FILE* f, uint32_t text_size, char* strtab, Elf32_Sym* text_syms, size_t ts_count);
 
 #endif
 

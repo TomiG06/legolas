@@ -7,6 +7,7 @@
 #include "legolas.h"
 #include "helf.h"
 #include "disasm.h"
+#include "helpers.h"
 
 static const char magic_num[] = {ELFMAG0, ELFMAG1, ELFMAG2, ELFMAG3};
 
@@ -55,6 +56,7 @@ int main(int argc, char* argv[]) {
 
     //Creating an array where section header data will be stored
     Elf32_Shdr* section_headers = malloc(sizeof(Elf32_Shdr) * hdr.e_shnum);
+    if(!section_headers) malloc_fail_and_exit();
 
     //Go to the start of the section header table
     fseek(f, hdr.e_shoff, SEEK_SET);
@@ -66,28 +68,50 @@ int main(int argc, char* argv[]) {
 
 
     /*
-        NASM elf contains an empty sheader
+        NASM elf contains an empty section header
         not visible on the shstrtab, so for
         the time being these will be +1
     */
     int16_t dottext_index = index_of_str(".text", sh, hdr.e_shnum) + 1;
-    int16_t symtab_index = index_of_str(".symtab", sh, hdr.e_shnum) + 1;
-
+    int16_t dotsymtab_index = index_of_str(".symtab", sh, hdr.e_shnum) + 1;
+    int16_t dotstrtab_index = index_of_str(".strtab", sh, hdr.e_shnum) + 1;
 
     if(dottext_index < 0) {
         printf(".text section not found\n");
         return 1;
     }
 
-    /*
-    fseek(f, SEQ_EL(symtab_index), SEEK_SET); //Some day
-    fread(&loc, sizeof(uint32_t), 1, f);
-    fread(&size, sizeof(uint32_t), 1, f);
-    */
+    //Number of entries in .symtab
+    size_t entries = section_headers[dotsymtab_index].sh_size / section_headers[dotsymtab_index].sh_entsize;
+
+    Elf32_Sym* symtab = malloc(sizeof(Elf32_Sym) * entries);
+    if(!symtab) malloc_fail_and_exit();
+    
+    //Go to the beginning of .symtab
+    fseek(f, section_headers[dotsymtab_index].sh_offset, SEEK_SET);
+
+    //Read entries
+    for(size_t i = 0; i < entries; i++) fread(&symtab[i], sizeof(Elf32_Sym), 1, f);
+
+    //Read .strtab
+    char* strtab = malloc(section_headers[dotstrtab_index].sh_size);
+
+    fseek(f, section_headers[dotstrtab_index].sh_offset, SEEK_SET);
+    fread(strtab, section_headers[dotstrtab_index].sh_size, 1, f);
+
+    size_t text_syms_count = 0;
+    for(size_t i = 0; i < entries; i++) if(symtab[i].st_shndx == dottext_index && !ELF32_ST_TYPE(symtab[i].st_info)) text_syms_count++;
+
+    Elf32_Sym* dottext_syms = malloc(sizeof(Elf32_Sym) * text_syms_count);
+
+    for(size_t i = 0, c = 0; i < entries; i++) if(symtab[i].st_shndx == dottext_index && !ELF32_ST_TYPE(symtab[i].st_info)) dottext_syms[c++] = symtab[i];
     
     fseek(f, section_headers[dottext_index].sh_offset, SEEK_SET);
 
-    start_disassembly(f, section_headers[dottext_index].sh_size);
+    start_disassembly(f, section_headers[dottext_index].sh_size, strtab, dottext_syms, text_syms_count);
+
+    free(section_headers);
+    free(sh);
 
     fclose(f);
     return 0;
