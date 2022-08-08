@@ -54,7 +54,7 @@ void display_instr(struct instr* inst) {
     if(inst->lock)  printf("lock ");
 
     //print mnemonic
-    printf("%s", inst->mnemonic);
+    printf("\t%s", inst->mnemonic);
 
     char* buff = (char*)malloc(100);
     char sreg_buff[3] = "";

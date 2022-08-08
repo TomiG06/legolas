@@ -1356,8 +1356,17 @@ void set_instruction(FILE* f, struct instr* inst) {
 }
 
 void start_disassembly(FILE* f, uint32_t text_size, char* strtab, Elf32_Sym* text_syms, size_t ts_count) {
+    struct instr* instruction;
+
     while(counter < text_size) {
-        struct instr* instruction = (struct instr*) calloc(sizeof(struct instr), 1);
+        
+        for(size_t i = 0; i < ts_count; i++) {
+            if(text_syms[i].st_value == counter) {
+                printf("%s:\n", strtab + text_syms[i].st_name);
+            }
+        }
+
+        instruction = (struct instr*) calloc(sizeof(struct instr), 1);
 
         if(!instruction) malloc_fail_and_exit();
         instruction->op = instruction->addr = 32;
