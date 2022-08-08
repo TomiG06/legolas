@@ -4,7 +4,6 @@
 #include <string.h>
 #include <unistd.h>
 #include <elf.h>
-#include "legolas.h"
 #include "helf.h"
 #include "disasm.h"
 #include "helpers.h"
