@@ -498,7 +498,7 @@ void set_instruction(FILE* f, struct instr* inst) {
             read_b(f, 1, &inst->operands[0]);
 
             //TODO: decode rel8 (we are going to process it as an immediate value for the time being)
-            inst->description[0] = imm;
+            inst->description[0] = rel8;
 
             break;
         
@@ -1207,7 +1207,7 @@ void set_instruction(FILE* f, struct instr* inst) {
         case JECXZ_rel8:
             set_mn(inst, inst->addr == 32? "jecxz": "jcxz");
             read_b(f, 1, &inst->operands[0]);
-            inst->description[0] = rel;
+            inst->description[0] = rel8;
             inst->opernum = 1;
             break;
         case IN_al_imm8:
@@ -1231,7 +1231,7 @@ void set_instruction(FILE* f, struct instr* inst) {
         case JMP_rel8:
         case JMP_rel1632:
             read_b(f, inst->opcode != JMP_rel8? 4: 1, &inst->operands[0]);
-            inst->description[0] = rel;
+            inst->description[0] = inst->opcode == JMP_rel8? rel8: rel1632;
             set_mn(inst, inst->opcode&1? "jmp": "call");
             inst->opernum = 1;
             break;
@@ -1378,7 +1378,7 @@ void start_disassembly(FILE* f, uint32_t text_size, char* strtab, Elf32_Sym* tex
         set_instruction(f, instruction);
 
         //display instruction
-        display_instr(instruction);
+        display_instr(instruction, strtab, text_syms, ts_count);
 
         free(instruction);
     }

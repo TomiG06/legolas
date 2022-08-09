@@ -47,7 +47,7 @@ const char* get_ptr_type(struct instr* inst, uint8_t idx) {
 
 }
 
-void display_instr(struct instr* inst) {
+void display_instr(struct instr* inst, char* strtab, Elf32_Sym* text_syms, size_t ts_count) {
     //print prefixes
     if(inst->rep & !inst->f3_not_rep)   printf("repe ");
     if(inst->repn)  printf("repne ");
@@ -125,6 +125,26 @@ void display_instr(struct instr* inst) {
                 break;
             case ptr:
                 sprintf(buff, "0x%X:0x%X", inst->operands[i+1], inst->operands[i]);
+                break;
+            case rel8:
+                for(size_t j = 0; j < ts_count; j++) {
+                    if(counter + (int8_t)inst->operands[i] == text_syms[j].st_value) {
+                        sprintf(buff, "%s", strtab + text_syms[j].st_name);
+                        break;
+                    }
+
+                    if(j + 1 == ts_count) sprintf(buff, "0x%X", (int8_t)inst->operands[i] + counter);
+                }
+                break;
+            case rel1632:
+                for(size_t j = 0; j < ts_count; j++) {
+                    if(counter + (int32_t)inst->operands[i] == text_syms[j].st_value) {
+                        sprintf(buff, "%s", strtab + text_syms[j].st_name);
+                        break;
+                    }
+
+                    if(j + 1 == ts_count) sprintf(buff, "0x%X", (int32_t)inst->operands[i] + counter);
+                }
                 break;
         }
         
