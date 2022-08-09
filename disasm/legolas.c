@@ -63,7 +63,13 @@ int main(int argc, char* argv[]) {
     //Read and store section headers
     for(size_t i = 0; i < hdr.e_shnum; i++) fread(&section_headers[i], sizeof(Elf32_Shdr), 1, f);
 
-    char** sh = read_str(f, section_headers[hdr.e_shstrndx].sh_offset, section_headers[hdr.e_shstrndx].sh_size, hdr.e_shnum);
+    //Read section header table
+    char* sh = (char*)malloc(section_headers[hdr.e_shstrndx].sh_size);
+    if(!sh) malloc_fail_and_exit();
+
+    fseek(f, section_headers[hdr.e_shstrndx].sh_offset, SEEK_SET);
+
+    fread(sh, section_headers[hdr.e_shstrndx].sh_size, 1, f);
 
 
     /*
@@ -71,9 +77,9 @@ int main(int argc, char* argv[]) {
         not visible on the shstrtab, so for
         the time being these will be +1
     */
-    int16_t dottext_index = index_of_str(".text", sh, hdr.e_shnum) + 1;
-    int16_t dotsymtab_index = index_of_str(".symtab", sh, hdr.e_shnum) + 1;
-    int16_t dotstrtab_index = index_of_str(".strtab", sh, hdr.e_shnum) + 1;
+    int16_t dottext_index = index_of_str_in_sh(".text", sh, section_headers, hdr.e_shnum);
+    int16_t dotsymtab_index = index_of_str_in_sh(".symtab", sh, section_headers, hdr.e_shnum);
+    int16_t dotstrtab_index = index_of_str_in_sh(".strtab", sh, section_headers, hdr.e_shnum);
 
     if(dottext_index < 0) {
         printf(".text section not found\n");
