@@ -1363,7 +1363,7 @@ void start_disassembly(FILE* f, uint32_t text_size, char* strtab, Elf32_Sym* tex
         
         for(size_t i = 0; i < ts_count; i++) {
             if(text_syms[i].st_value == counter) {
-                printf("%s:\n", strtab + text_syms[i].st_name);
+                printf("<%s>\n", strtab + text_syms[i].st_name);
             }
         }
 

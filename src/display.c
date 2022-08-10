@@ -135,7 +135,7 @@ void display_instr(struct instr* inst, char* strtab, Elf32_Sym* text_syms, size_
                 for(size_t j = 0; j < ts_count; j++) {
                     if(inst->description[i] == rel8    && counter + (int8_t) inst->operands[i] == text_syms[j].st_value ||
                        inst->description[i] == rel1632 && counter + (int32_t)inst->operands[i] == text_syms[j].st_value) {
-                        sprintf(buff, "%s", strtab + text_syms[j].st_name);
+                        sprintf(buff, "<%s>", strtab + text_syms[j].st_name);
                         break;
                     }
 
