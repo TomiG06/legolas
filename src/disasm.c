@@ -434,7 +434,7 @@ void set_instruction(FILE* f, struct instr* inst) {
             break;
         case PUSH_imm1632:
             set_mn(inst, "push");
-            get_imm(f, inst, 4, 0);
+            get_imm(f, inst, inst->op == 32? 4: 2, 0);
             inst->opernum = 1;
             break;
         case IMUL_r1632_rm1632_imm1632:
@@ -447,6 +447,7 @@ void set_instruction(FILE* f, struct instr* inst) {
         case PUSH_imm8:
             set_mn(inst, "push");
             get_imm(f, inst, 1, 0);
+            inst->opernum = 1;
             break;
         case INSB:
             set_mn(inst, "insb");
