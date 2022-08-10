@@ -48,13 +48,16 @@ const char* get_ptr_type(struct instr* inst, uint8_t idx) {
 }
 
 void display_instr(struct instr* inst, char* strtab, Elf32_Sym* text_syms, size_t ts_count) {
+    
+    putc('\t');
+
     //print prefixes
     if(inst->rep & !inst->f3_not_rep)   printf("repe ");
     if(inst->repn)  printf("repne ");
     if(inst->lock)  printf("lock ");
 
     //print mnemonic
-    printf("\t%s", inst->mnemonic);
+    printf("\%s", inst->mnemonic);
 
     char* buff = (char*)malloc(100);
     char sreg_buff[3] = "";
@@ -92,23 +95,23 @@ void display_instr(struct instr* inst, char* strtab, Elf32_Sym* text_syms, size_
 
                 switch(inst->addr) {
                     case 16:
-                        if(!inst->mrm.mod && inst->mrm.rm == 6) sprintf(buff, "%s0x%X]", buff, inst->operands[i]);
+                        if(!inst->mrm.mod && inst->mrm.rm == 6) sprintf(buff, "%s0x%x]", buff, inst->operands[i]);
                         else {
                             sprintf(buff, "%s%s", buff, rm16[inst->mrm.rm]);
-                            if(inst->mrm.mod) sprintf(buff, "%s%c0x%X", buff, '+', inst->operands[i]);
+                            if(inst->mrm.mod) sprintf(buff, "%s%c0x%x", buff, '+', inst->operands[i]);
                             sprintf(buff, "%s]", buff);
                         }
                         break;
                     case 32:
                         if(inst->hasSIB) {
                             sprintf(buff, "%s%s%s%s*%.0f", buff, inst->mrm.mod || inst->sb.base != ebp? reg32[inst->sb.base]: "", inst->mrm.mod || inst->sb.base != ebp? "+": "", reg32[inst->sb.index], pow(2, inst->sb.scale));
-                            if(inst->mrm.mod || inst->sb.base == ebp) sprintf(buff, "%s+0x%X", buff, inst->operands[i]);
+                            if(inst->mrm.mod || inst->sb.base == ebp) sprintf(buff, "%s+0x%x", buff, inst->operands[i]);
                             sprintf(buff, "%s]", buff);
                         } else {
                             if(!inst->mrm.mod) {
                                 if(inst->mrm.rm == 5) sprintf(buff, "%s0x%X]", buff, inst->operands[i]);
                                 else sprintf(buff, "%s%s]", buff, reg32[inst->mrm.rm]);
-                            } else sprintf(buff, "%s%s+0x%X]", buff, reg32[inst->mrm.rm], inst->operands[i]);
+                            } else sprintf(buff, "%s%s+0x%x]", buff, reg32[inst->mrm.rm], inst->operands[i]);
                         }
                         break;
                 }
@@ -124,7 +127,7 @@ void display_instr(struct instr* inst, char* strtab, Elf32_Sym* text_syms, size_
                 sprintf(buff, "st%d", inst->operands[i]);
                 break;
             case ptr:
-                sprintf(buff, "0x%X:0x%X", inst->operands[i+1], inst->operands[i]);
+                sprintf(buff, "0x%x:0x%x", inst->operands[i+1], inst->operands[i]);
                 break;
             case rel8:
                 for(size_t j = 0; j < ts_count; j++) {
@@ -133,7 +136,7 @@ void display_instr(struct instr* inst, char* strtab, Elf32_Sym* text_syms, size_
                         break;
                     }
 
-                    if(j + 1 == ts_count) sprintf(buff, "0x%X", (int8_t)inst->operands[i] + counter);
+                    if(j + 1 == ts_count) sprintf(buff, "0x%x", (int8_t)inst->operands[i] + counter);
                 }
                 break;
             case rel1632:
@@ -143,7 +146,7 @@ void display_instr(struct instr* inst, char* strtab, Elf32_Sym* text_syms, size_
                         break;
                     }
 
-                    if(j + 1 == ts_count) sprintf(buff, "0x%X", (int32_t)inst->operands[i] + counter);
+                    if(j + 1 == ts_count) sprintf(buff, "0x%x", (int32_t)inst->operands[i] + counter);
                 }
                 break;
         }
