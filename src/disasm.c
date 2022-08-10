@@ -498,8 +498,9 @@ void set_instruction(FILE* f, struct instr* inst) {
 
             read_b(f, 1, &inst->operands[0]);
 
-            //TODO: decode rel8 (we are going to process it as an immediate value for the time being)
             inst->description[0] = rel8;
+
+            inst->op = 8;
 
             break;
         
@@ -1231,8 +1232,13 @@ void set_instruction(FILE* f, struct instr* inst) {
         case CALL_rel1632:
         case JMP_rel8:
         case JMP_rel1632:
-            read_b(f, inst->opcode != JMP_rel8? 4: 1, &inst->operands[0]);
-            inst->description[0] = inst->opcode == JMP_rel8? rel8: rel1632;
+            if(inst->opcode == JMP_rel8) {
+                inst->op = 8;
+                inst->description[0] = rel8;
+            } else inst->description[0] = rel1632;
+
+            read_b(f, inst->op/8, &inst->operands[0]);
+
             set_mn(inst, inst->opcode&1? "jmp": "call");
             inst->opernum = 1;
             break;

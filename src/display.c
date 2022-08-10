@@ -131,18 +131,22 @@ void display_instr(struct instr* inst, char* strtab, Elf32_Sym* text_syms, size_
                 break;
             case rel8:
             case rel1632:
-                //TODO: store operand in a variable and typecast it from the beginning
-                for(size_t j = 0; j < ts_count; j++) {
-                    if(inst->description[i] == rel8    && counter + (int8_t) inst->operands[i] == text_syms[j].st_value ||
-                       inst->description[i] == rel1632 && counter + (int32_t)inst->operands[i] == text_syms[j].st_value) {
-                        sprintf(buff, "<%s>", strtab + text_syms[j].st_name);
-                        break;
-                    }
+                {
+                    if(inst->description[i] == rel8) inst->op = 8;
 
-                    if(j + 1 == ts_count) {
-                        
-                        if(inst->description[i] == rel8) sprintf(buff, "0x%x", (int8_t)inst->operands[i] + counter);
-                        else sprintf(buff, "0x%x", (int32_t)inst->operands[i] + counter);
+                    int32_t rel_addr;
+
+                    if(inst->op == 8)       rel_addr = (int8_t)  inst->operands[i];
+                    else if(inst->op == 16) rel_addr = (int16_t) inst->operands[i];
+                    else                    rel_addr = (int32_t) inst->operands[i];
+
+                    for(size_t j = 0; j < ts_count; j++) {
+                        if(counter + rel_addr == text_syms[j].st_value) {
+                            sprintf(buff, "<%s>", strtab + text_syms[j].st_name);
+                            break;
+                        }
+    
+                        if(j + 1 == ts_count) sprintf(buff, "0x%x", inst->operands[i] + counter);
                     }
                 }
                 break;
