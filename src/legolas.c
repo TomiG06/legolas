@@ -124,6 +124,9 @@ int main(int argc, char* argv[]) {
 
     free(section_headers);
     free(sh);
+    free(symtab);
+    free(strtab);
+    free(dottext_syms);
 
     fclose(f);
     return 0;
