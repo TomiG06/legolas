@@ -1062,7 +1062,7 @@ void set_instruction(FILE* f, struct instr* inst) {
                     else set_mn(inst, "fistp");
                 case 5:
                     if(inst->description[0] == r) set_mn(inst, "fucomi");
-                    else set_mn(inst, "fid");
+                    else set_mn(inst, "fld");
                 case FCOMI:
                     set_mn(inst, "fcomi");
                 case FSTP_DB:

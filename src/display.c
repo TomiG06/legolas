@@ -36,15 +36,22 @@ void get_sregister(char* buff, uint8_t num) {
 const char* get_ptr_type(struct instr* inst, uint8_t idx) {
     uint8_t size = inst->op;
 
-    if(inst->description[idx] == m64) size = 64;
-    if(inst->description[idx] == m16) size = 16;
-
-    if(inst->description[idx] == m80 || inst->description[idx] == far) return inst->description[idx] == m80? "tbyte": "fword";
-
-     if(inst->description[idx] == m) return "";
-
+    switch(inst->description[idx]) {
+        case m16:
+            size = 16;
+            break;
+        case m64:
+            size = 64;
+            break;
+        case m80:
+            return "tbyte";
+        case far:
+            return "fword";
+        case m:
+            return "";
+    }
+ 
      return rm_ptr[(int)log2(size)-3];
-
 }
 
 void display_instr(struct instr* inst, char* strtab, Elf32_Sym* text_syms, size_t ts_count) {
@@ -57,7 +64,7 @@ void display_instr(struct instr* inst, char* strtab, Elf32_Sym* text_syms, size_
     if(inst->lock)  printf("lock ");
 
     //print mnemonic
-    printf("\%s", inst->mnemonic);
+    printf("%s", inst->mnemonic);
 
     char* buff = (char*)malloc(100);
     char sreg_buff[3] = "";
