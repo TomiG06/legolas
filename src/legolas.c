@@ -77,22 +77,16 @@ int main(int argc, char* argv[]) {
 
     fread(sh, section_headers[hdr.e_shstrndx].sh_size, 1, f);
 
-
-    /*
-        NASM elf contains an empty section header
-        not visible on the shstrtab, so for
-        the time being these will be +1
-    */
-    int16_t dottext_index = index_of_str_in_sh(".text", sh, section_headers, hdr.e_shnum);
     int16_t dotsymtab_index = index_of_str_in_sh(".symtab", sh, section_headers, hdr.e_shnum);
     int16_t dotstrtab_index = index_of_str_in_sh(".strtab", sh, section_headers, hdr.e_shnum);
 
-    if(dottext_index < 0) {
-        printf(".text section not found\n");
+    //Number of entries in .symtab
+
+    if(!section_headers[dotsymtab_index].sh_entsize) {
+        puts("Symtab entries are non-fixed. Cannot proceed");
         return 1;
     }
 
-    //Number of entries in .symtab
     size_t entries = section_headers[dotsymtab_index].sh_size / section_headers[dotsymtab_index].sh_entsize;
 
     Elf32_Sym* symtab = malloc(sizeof(Elf32_Sym) * entries);
@@ -110,23 +104,35 @@ int main(int argc, char* argv[]) {
     fread(strtab, section_headers[dotstrtab_index].sh_size, 1, f);
 
     //Filter out symbols that belong in .text
-    size_t text_syms_count = 0;
-    for(size_t i = 0; i < entries; i++) if(symtab[i].st_shndx == dottext_index && !ELF32_ST_TYPE(symtab[i].st_info)) text_syms_count++;
+    for(size_t i = 0; i < hdr.e_shnum; i++) {
+        if(section_headers[i].sh_type != SHT_PROGBITS) continue;
+        if(section_headers[i].sh_flags & SHF_WRITE) continue;
+        
+        size_t section_syms_count = 0;
+        for(size_t j = 0; j < entries; j++) if(symtab[j].st_shndx == i && !ELF32_ST_TYPE(symtab[j].st_info)) section_syms_count++;
 
-    Elf32_Sym* dottext_syms = malloc(sizeof(Elf32_Sym) * text_syms_count);
+        Elf32_Sym* section_syms = malloc(sizeof(Elf32_Sym) * section_syms_count);
 
-    for(size_t i = 0, c = 0; i < entries; i++) if(symtab[i].st_shndx == dottext_index && !ELF32_ST_TYPE(symtab[i].st_info)) dottext_syms[c++] = symtab[i];
+        for(size_t j = 0, c = 0; j < entries; j++) if(symtab[j].st_shndx == i && !ELF32_ST_TYPE(symtab[j].st_info)) section_syms[c++] = symtab[j];
     
-    //Go to the beginning of .text
-    fseek(f, section_headers[dottext_index].sh_offset, SEEK_SET);
+        //Go to the beginning of .text
+        fseek(f, section_headers[i].sh_offset, SEEK_SET);
 
-    start_disassembly(f, section_headers[dottext_index].sh_size, strtab, dottext_syms, text_syms_count);
+        printf("disassembly of section %s:\n\n", sh+section_headers[i].sh_name);
+
+        start_disassembly(f, section_headers[i].sh_size, strtab, section_syms, section_syms_count);
+
+        putchar(10);
+
+        free(section_syms);
+
+        counter = 0;
+    }
 
     free(section_headers);
     free(sh);
     free(symtab);
     free(strtab);
-    free(dottext_syms);
 
     fclose(f);
     return 0;
