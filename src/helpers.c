@@ -4,7 +4,7 @@
 
 /*
     We are using it because we want to keep track of the bytes read so that
-    they will not exceed the size of the .text section
+    we won't exceed the size of the section we are reading`
 */
 uint32_t counter = 0;
 
@@ -14,7 +14,7 @@ void malloc_fail_and_exit() {
     exit(1);
 }
 
-//custom fread in order to also keep track of the bytes
+//Custom fread in order to also keep track of the bytes
 void read_b(FILE* f, uint8_t nb, uint32_t* ptr) {
     fread(ptr, nb, 1, f);
     counter += nb;

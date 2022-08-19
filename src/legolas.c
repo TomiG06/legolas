@@ -77,6 +77,8 @@ int main(int argc, char* argv[]) {
 
     fread(sh, section_headers[hdr.e_shstrndx].sh_size, 1, f);
 
+    //Get indexes of .symtab and .strtab
+
     int16_t dotsymtab_index = index_of_str_in_sh(".symtab", sh, section_headers, hdr.e_shnum);
     int16_t dotstrtab_index = index_of_str_in_sh(".strtab", sh, section_headers, hdr.e_shnum);
 
@@ -103,11 +105,17 @@ int main(int argc, char* argv[]) {
     fseek(f, section_headers[dotstrtab_index].sh_offset, SEEK_SET);
     fread(strtab, section_headers[dotstrtab_index].sh_size, 1, f);
 
-    //Filter out symbols that belong in .text
+    /*
+        Loop through each section
+    */
     for(size_t i = 0; i < hdr.e_shnum; i++) {
+        //Check if section holds holds instructions 
+        //TODO: .rodata section shall not pass (it passes for the time being)
+
         if(section_headers[i].sh_type != SHT_PROGBITS) continue;
         if(section_headers[i].sh_flags & SHF_WRITE) continue;
         
+        //Filter out symbols that belong in the section
         size_t section_syms_count = 0;
         for(size_t j = 0; j < entries; j++) if(symtab[j].st_shndx == i && !ELF32_ST_TYPE(symtab[j].st_info)) section_syms_count++;
 
@@ -115,26 +123,32 @@ int main(int argc, char* argv[]) {
 
         for(size_t j = 0, c = 0; j < entries; j++) if(symtab[j].st_shndx == i && !ELF32_ST_TYPE(symtab[j].st_info)) section_syms[c++] = symtab[j];
     
-        //Go to the beginning of .text
+        //Go to the beginning of the section
         fseek(f, section_headers[i].sh_offset, SEEK_SET);
 
+        //Inform the user which section is being disassembled
         printf("disassembly of section %s:\n\n", sh+section_headers[i].sh_name);
 
+        //Actually disassembling the section
         start_disassembly(f, section_headers[i].sh_size, strtab, section_syms, section_syms_count);
 
         putchar(10);
 
         free(section_syms);
 
+        //Zero the counter
         counter = 0;
     }
 
+    //Free allocated memory
     free(section_headers);
     free(sh);
     free(symtab);
     free(strtab);
 
+    //Close the file
     fclose(f);
+
     return 0;
 }
 
