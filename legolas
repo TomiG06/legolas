@@ -5,18 +5,7 @@ if [[ $# == 0 || $1 == "-h" || $1 == "--help" ]]; then
     exit 0
 fi
 
-#Stupid way of determining path
-
-path_to_file=$1
-
-
-if [[ $1[0] != "/" ]]; then
-    # If relative path is given
-    # we add it in the end of the
-    # absolute path
-
-    path_to_file=$(pwd)/$1
-fi
+path_to_file=$(realpath $1)
 
 # relocating on the executable directory
 cd $(dirname $(readlink -f $0))/src/
