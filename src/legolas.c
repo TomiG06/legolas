@@ -82,28 +82,30 @@ int main(int argc, char* argv[]) {
     int16_t dotsymtab_index = index_of_str_in_sh(".symtab", sh, section_headers, hdr.e_shnum);
     int16_t dotstrtab_index = index_of_str_in_sh(".strtab", sh, section_headers, hdr.e_shnum);
 
-    //Number of entries in .symtab
+    char* strtab = NULL;
+    size_t entries;
+    Elf32_Sym* symtab = NULL;
 
-    if(!section_headers[dotsymtab_index].sh_entsize) {
-        puts("Symtab entries are non-fixed. Cannot proceed");
-        return 1;
-    }
+    if(dotsymtab_index > 0) {
 
-    size_t entries = section_headers[dotsymtab_index].sh_size / section_headers[dotsymtab_index].sh_entsize;
+       //Number of entries in .symtab
 
-    Elf32_Sym* symtab = malloc(sizeof(Elf32_Sym) * entries);
-    if(!symtab) malloc_fail_and_exit();
+       entries = section_headers[dotsymtab_index].sh_size / sizeof(Elf32_Sym);
+
+       symtab = malloc(sizeof(Elf32_Sym) * entries);
+       if(!symtab) malloc_fail_and_exit();
     
-    //Go to the beginning of .symtab
-    fseek(f, section_headers[dotsymtab_index].sh_offset, SEEK_SET);
+       //Go to the beginning of .symtab
+       fseek(f, section_headers[dotsymtab_index].sh_offset, SEEK_SET);
 
-    //Read entries
-    for(size_t i = 0; i < entries; i++) fread(&symtab[i], sizeof(Elf32_Sym), 1, f);
+       //Read entries
+       for(size_t i = 0; i < entries; i++) fread(&symtab[i], sizeof(Elf32_Sym), 1, f);
 
-    //Read .strtab
-    char* strtab = malloc(section_headers[dotstrtab_index].sh_size);
-    fseek(f, section_headers[dotstrtab_index].sh_offset, SEEK_SET);
-    fread(strtab, section_headers[dotstrtab_index].sh_size, 1, f);
+       //Read .strtab
+       strtab = malloc(section_headers[dotstrtab_index].sh_size);
+       fseek(f, section_headers[dotstrtab_index].sh_offset, SEEK_SET);
+       fread(strtab, section_headers[dotstrtab_index].sh_size, 1, f);
+    }
 
     /*
         Loop through each section
@@ -117,12 +119,17 @@ int main(int argc, char* argv[]) {
         
         //Filter out symbols that belong in the section
         size_t section_syms_count = 0;
-        for(size_t j = 0; j < entries; j++) if(symtab[j].st_shndx == i && !ELF32_ST_TYPE(symtab[j].st_info)) section_syms_count++;
 
-        Elf32_Sym* section_syms = malloc(sizeof(Elf32_Sym) * section_syms_count);
+        Elf32_Sym* section_syms = NULL;
 
-        for(size_t j = 0, c = 0; j < entries; j++) if(symtab[j].st_shndx == i && !ELF32_ST_TYPE(symtab[j].st_info)) section_syms[c++] = symtab[j];
-    
+        if(dotsymtab_index > 0) {
+            for(size_t j = 0; j < entries; j++) if(symtab[j].st_shndx == i && !ELF32_ST_TYPE(symtab[j].st_info)) section_syms_count++;
+
+            section_syms = malloc(sizeof(Elf32_Sym) * section_syms_count);
+
+            for(size_t j = 0, c = 0; j < entries; j++) if(symtab[j].st_shndx == i && !ELF32_ST_TYPE(symtab[j].st_info)) section_syms[c++] = symtab[j];
+        }
+
         //Go to the beginning of the section
         fseek(f, section_headers[i].sh_offset, SEEK_SET);
 
@@ -134,7 +141,7 @@ int main(int argc, char* argv[]) {
 
         putchar(10);
 
-        free(section_syms);
+        if(section_syms) free(section_syms);
 
         //Zero the counter
         counter = 0;
@@ -143,8 +150,8 @@ int main(int argc, char* argv[]) {
     //Free allocated memory
     free(section_headers);
     free(sh);
-    free(symtab);
-    free(strtab);
+    if(symtab) free(symtab);
+    if(strtab) free(strtab);
 
     //Close the file
     fclose(f);
