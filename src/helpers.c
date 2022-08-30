@@ -17,8 +17,7 @@ void malloc_fail_and_exit() {
     exit(1);
 }
 
-//Custom fread in order to also keep track of the bytes
-void read_b(FILE* f, uint8_t nb, uint32_t* ptr) {
+void read_b(uint8_t nb, uint32_t* ptr) {
     switch(nb) {
         case 1:
             *ptr = *(uint8_t*)  (machine_code + counter);
