@@ -1364,12 +1364,15 @@ void set_instruction(FILE* f, struct instr* inst) {
 
 void start_disassembly(FILE* f, uint32_t text_size, char* strtab, Elf32_Sym* text_syms, size_t ts_count) {
     struct instr* instruction;
+    char hex_code[32] = "";
+    char hex_byte[5]  = "";   //Just to remove the warning
+    uint32_t starting_position = 0;
 
     while(counter < text_size) {
         
         for(size_t i = 0; i < ts_count; i++) {
             if(text_syms[i].st_value == counter) {
-                printf("<%s>\n", strtab + text_syms[i].st_name);
+                printf("\n%08x <%s>:\n", counter, strtab + text_syms[i].st_name);
             }
         }
 
@@ -1385,9 +1388,20 @@ void start_disassembly(FILE* f, uint32_t text_size, char* strtab, Elf32_Sym* tex
         set_instruction(f, instruction);
 
         //display instruction
-        display_instr(instruction, strtab, text_syms, ts_count);
+        printf("%4x:", starting_position); /* instruction position */
+
+        for(int x = starting_position; x < counter; x++) {
+            sprintf(hex_byte, " %02x",  machine_code[x]);
+            strcat(hex_code, hex_byte);
+        }
+
+        printf("%-20s ", hex_code);         /* instruction in machine code */
+
+        display_instr(instruction, strtab, text_syms, ts_count);    /* instruction in assembly */
 
         free(instruction);
+        memset(hex_code, 0, sizeof(hex_code)) ;
+        starting_position = counter;
     }
 }
 

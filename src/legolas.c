@@ -133,13 +133,16 @@ int main(int argc, char* argv[]) {
         //Go to the beginning of the section
         fseek(f, section_headers[i].sh_offset, SEEK_SET);
 
+        machine_code = malloc(section_headers[i].sh_size);
+        if(!machine_code) malloc_fail_and_exit();
+
+        fread(machine_code, section_headers[i].sh_size, 1, f);
+
         //Inform the user which section is being disassembled
-        printf("disassembly of section %s:\n\n", sh+section_headers[i].sh_name);
+        printf("\nDisassembly of section %s:\n\n", sh+section_headers[i].sh_name);
 
         //Actually disassembling the section
         start_disassembly(f, section_headers[i].sh_size, strtab, section_syms, section_syms_count);
-
-        putchar(10);
 
         if(section_syms) free(section_syms);
 
