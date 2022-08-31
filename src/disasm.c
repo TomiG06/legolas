@@ -49,6 +49,7 @@ uint8_t set_prefixes(struct instr* inst) {
                 break;
             case EXTENDED:
                 inst->extended = 1;
+                break;
             default:
                 inst->seg = pfx;
                 break;
@@ -241,6 +242,124 @@ uint8_t asm_modrm(struct instr* inst) { return (inst->mrm.mod << 6) | (inst->mrm
 
 //Check opcode and set mnemonic/operands accordingly
 void set_instruction(struct instr* inst) {
+    if(inst->extended) {
+        switch(inst->opcode) {
+            case 0x0:
+                mod_rm(inst);
+                get_operands(inst, 0);
+                inst->opernum = 1;
+
+                switch(inst->mrm.reg) {
+                    case 0:
+                        set_mn(inst, "sldt");
+                        break;
+                    case 1:
+                        set_mn(inst, "str");
+                        break;
+                    case 2:
+                        set_mn(inst, "lldt");
+                        break;
+                    case 3:
+                        set_mn(inst, "ltr");
+                        break;
+                    case 4:
+                        set_mn(inst, "verr");
+                        break;
+                    case 5:
+                        set_mn(inst, "verw");
+                        break;
+                }
+
+                if(inst->description[0] == rm) inst->op = 16;
+
+                break;
+            case 0x1:
+                mod_rm(inst);
+
+                switch(asm_modrm(inst)) {
+                    case 0xC1:
+                        set_mn(inst, "vmcall");
+                        break;
+                    case 0xC2:
+                        set_mn(inst, "vmlaunch");
+                        break;
+                    case 0xC3:
+                        set_mn(inst, "vmresume");
+                        break;
+                    case 0xC4:
+                        set_mn(inst, "vmxoff");
+                        break;
+                    case 0xC8:
+                        set_mn(inst, "monitor");
+                        break;
+                    case 0xC9:
+                        set_mn(inst, "mwait");
+                        break;
+                    case 0xD0:
+                        set_mn(inst, "xgetbv");
+                        break;
+                    case 0xD1:
+                        set_mn(inst, "xsetbv");
+                        break;
+                    case 0xF9:
+                        set_mn(inst, "rdtscp");
+                        break;
+
+                    default:
+                        get_operands(inst, 0);
+                        inst->opernum = 1;
+                        switch(inst->mrm.reg) {
+                            case 0:
+                                set_mn(inst, "sgdt");
+                            case 1:
+                                set_mn(inst, "sidt");
+                            case 2:
+                                set_mn(inst, "lgdt");
+                            case 3:
+                                set_mn(inst, "lidt");
+                                inst->description[0] = m;
+                                break;
+                            case 4:
+                                set_mn(inst, "smsw");
+                            case 6:
+                                set_mn(inst, "lmsw");
+                                if(inst->description[0] == rm) inst->op = 16;
+                                break;
+                            case 7:
+                                set_mn(inst, "invlpg");
+                                inst->op = 8;
+                                break;
+                        }
+                }
+                break;
+            case 0x2:
+            case 0x3:
+                r81632_rm81632(inst->opcode == 0x2? "lar": "lsl", 0, inst);
+                if(inst->description[1] == r) inst->operands[1] = r16 | inst->operands[1];
+                break;
+            case 0x6:
+                set_mn(inst, "clts");
+                break;
+            case 0x8:
+                set_mn(inst, "invd");
+                break;
+            case 0x9:
+                set_mn(inst, "wbinvd");
+                break;
+            case 0xB:
+                set_mn(inst, "ud2");
+                break;
+            case 0xD:
+                set_mn(inst, "nop");
+                mod_rm(inst);
+                get_operands(inst, 0);
+                inst->opernum = 1;
+                break;
+        }
+
+        return;
+    }
+
     switch(inst->opcode) {
         case ADD_rm8_r8:
         case ADD_rm1632_r1632:
@@ -1395,7 +1514,7 @@ void start_disassembly(uint32_t text_size, char* strtab, Elf32_Sym* text_syms, s
             strcat(hex_code, hex_byte);
         }
 
-        printf("%-20s ", hex_code);         /* instruction in machine code */
+        printf("  %-20s ", hex_code);         /* instruction in machine code */
 
         display_instr(instruction, strtab, text_syms, ts_count);    /* instruction in assembly */
 
