@@ -1481,17 +1481,17 @@ void set_instruction(struct instr* inst) {
     }
 }
 
-void start_disassembly(uint32_t text_size, char* strtab, Elf32_Sym* text_syms, size_t ts_count) {
+void start_disassembly(Elf32_Shdr shdr, char* strtab, Elf32_Sym* text_syms, size_t ts_count) {
     struct instr* instruction;
     char hex_code[32] = "";
     char hex_byte[5]  = "";   //Just to remove the warning
     uint32_t starting_position = 0;
 
-    while(counter < text_size) {
+    while(counter < shdr.sh_size) {
         
         for(size_t i = 0; i < ts_count; i++) {
-            if(text_syms[i].st_value == counter) {
-                printf("\n%08x <%s>:\n", counter, strtab + text_syms[i].st_name);
+            if(text_syms[i].st_value == counter + shdr.sh_addr) {
+                printf("\n%08x <%s>:\n", text_syms[i].st_value, strtab + text_syms[i].st_name);
             }
         }
 
@@ -1507,7 +1507,7 @@ void start_disassembly(uint32_t text_size, char* strtab, Elf32_Sym* text_syms, s
         set_instruction(instruction);
 
         //display instruction
-        printf("%4x:", starting_position); /* instruction position */
+        printf("%4x:", starting_position + shdr.sh_addr); /* instruction position */
 
         for(int x = starting_position; x < counter; x++) {
             sprintf(hex_byte, " %02x",  machine_code[x]);

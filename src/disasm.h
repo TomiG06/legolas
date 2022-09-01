@@ -84,7 +84,7 @@ struct instr {
     uint32_t operands[4];
 };
 
-void start_disassembly(uint32_t text_size, char* strtab, Elf32_Sym* text_syms, size_t ts_count);
+void start_disassembly(Elf32_Shdr shdr, char* strtab, Elf32_Sym* text_syms, size_t ts_count);
 
 #endif
 

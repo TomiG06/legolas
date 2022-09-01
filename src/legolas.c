@@ -142,7 +142,7 @@ int main(int argc, char* argv[]) {
         printf("\nDisassembly of section %s:\n\n", sh+section_headers[i].sh_name);
 
         //Actually disassembling the section
-        start_disassembly(section_headers[i].sh_size, strtab, section_syms, section_syms_count);
+        start_disassembly(section_headers[i], strtab, section_syms, section_syms_count);
 
         if(section_syms) free(section_syms);
 
