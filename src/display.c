@@ -49,6 +49,8 @@ const char* get_ptr_type(struct instr* inst, uint8_t idx) {
             return "fword";
         case m:
             return "";
+        case xmm:
+            return "xmmword";
     }
  
      return rm_ptr[(int)log2(size)-3];
@@ -98,6 +100,7 @@ void display_instr(struct instr* inst, char* strtab, Elf32_Sym* text_syms, size_
             case m64:
             case m80:
             case far:
+            case xmm:
                 sprintf(buff, "%s[%s%s", get_ptr_type(inst, i), sreg_buff, inst->seg? ":": "");
 
                 switch(inst->addr) {
@@ -132,6 +135,9 @@ void display_instr(struct instr* inst, char* strtab, Elf32_Sym* text_syms, size_
                 break;
             case sti:
                 sprintf(buff, "st%d", inst->operands[i]);
+                break;
+            case rxmm:
+                sprintf(buff, "xmm%d", inst->operands[i]);
                 break;
             case ptr:
                 sprintf(buff, "0x%x:0x%x", inst->operands[i+1], inst->operands[i]);

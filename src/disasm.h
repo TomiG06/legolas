@@ -8,8 +8,10 @@
 
 enum {
     r = 1,
+    rxmm,
     rm,
     m,
+    xmm,
     imm,
     sreg,
     ptr,

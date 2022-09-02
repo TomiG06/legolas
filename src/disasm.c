@@ -237,6 +237,33 @@ void setfdesc(struct instr* inst, uint8_t rm_replacement) {
     }
 }
 
+void set_xdesc(struct instr* inst, int none, int on66, int onf2, int onf3) {
+    for(size_t i = 0; i < inst->opernum; i++) {
+        if(inst->description[i] == r) inst->description[i] = rxmm;
+        else if(inst->description[i] == rm) {
+            if(inst->op == 16) {
+                inst->description[i] = on66;
+                inst->op = 32;
+            } else if(inst->repn) {
+                inst->description[i] = onf2;
+                inst->repn = 0;
+            } else if(inst->rep) {
+                inst->description[i] = onf3;
+                inst->rep = 0;
+            } else {
+                inst->description[i] = none;
+            }
+          }
+    }
+}
+
+void set_xmnem(struct instr* inst, char* none, char* on66, char* onf2, char* onf3) {
+    if(inst->op == 16)      set_mn(inst, on66);
+    else if(inst->repn)     set_mn(inst, onf2);
+    else if(inst->rep)      set_mn(inst, onf3);
+    else                    set_mn(inst, none);
+}
+
 //assemble Mod R/M byte
 uint8_t asm_modrm(struct instr* inst) { return (inst->mrm.mod << 6) | (inst->mrm.reg << 3) | inst->mrm.rm; }
 
@@ -354,6 +381,15 @@ void set_instruction(struct instr* inst) {
                 mod_rm(inst);
                 get_operands(inst, 0);
                 inst->opernum = 1;
+                break;
+
+            case 0x10:
+            case 0x11:
+                set_xmnem(inst, "movups", "movupd", "movsd", "movss");
+                if(inst->opcode == 0x10)    r81632_rm81632("", 0, inst);
+                else                        rm81632_r81632("", 0, inst);
+                
+                set_xdesc(inst, xmm, xmm, m64, m32);
                 break;
         }
 
