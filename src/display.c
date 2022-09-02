@@ -61,7 +61,7 @@ void display_instr(struct instr* inst, char* strtab, Elf32_Sym* text_syms, size_
     putchar('\t');
 
     //print prefixes
-    if(inst->rep & !inst->f3_not_rep)   printf("repe ");
+    if(inst->rep)   printf("repe ");
     if(inst->repn)  printf("repne ");
     if(inst->lock)  printf("lock ");
 

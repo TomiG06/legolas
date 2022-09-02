@@ -755,7 +755,7 @@ void set_instruction(struct instr* inst) {
             break;
         case NOP:
             set_mn(inst, inst->rep? "nop": "pause");
-            if(inst->rep) inst->f3_not_rep = 1;
+            if(inst->rep) inst->rep = 0;
             break;
  
         case XCHG_r1632_eax + ecx:
