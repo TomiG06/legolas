@@ -391,6 +391,12 @@ void set_instruction(struct instr* inst) {
                 
                 set_xdesc(inst, xmm, xmm, m64, m32);
                 break;
+            case 0x12:
+                r81632_rm81632("", 0, inst);
+                inst->mnem_is_set = 0;
+                set_xmnem(inst, inst->description[1] == rm? "movlps": "movhlps", "movlpd", "movddup", "movsldup");
+                set_xdesc(inst, m64, m64, m64, xmm);
+                break;
         }
 
         return;
