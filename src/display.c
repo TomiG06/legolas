@@ -66,7 +66,7 @@ void display_instr(struct instr* inst, char* strtab, Elf32_Sym* text_syms, size_
     if(inst->lock)  printf("lock ");
 
     //print mnemonic
-    printf("%-6s", inst->mnemonic);
+    printf("%-10s", inst->mnemonic);
 
     char* buff = (char*)malloc(100);
     char sreg_buff[3] = "";

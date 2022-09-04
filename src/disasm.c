@@ -258,6 +258,7 @@ void set_xdesc(struct instr* inst, int none, int on66, int onf2, int onf3) {
 }
 
 void set_xmnem(struct instr* inst, char* none, char* on66, char* onf2, char* onf3) {
+    inst->mnem_is_set = 0;
     if(inst->op == 16)      set_mn(inst, on66);
     else if(inst->repn)     set_mn(inst, onf2);
     else if(inst->rep)      set_mn(inst, onf3);
@@ -377,6 +378,7 @@ void set_instruction(struct instr* inst) {
                 set_mn(inst, "ud2");
                 break;
             case 0xD:
+            case 0x1f:
                 set_mn(inst, "nop");
                 mod_rm(inst);
                 get_operands(inst, 0);
@@ -393,10 +395,32 @@ void set_instruction(struct instr* inst) {
                 break;
             case 0x12:
                 r81632_rm81632("", 0, inst);
-                inst->mnem_is_set = 0;
                 set_xmnem(inst, inst->description[1] == rm? "movlps": "movhlps", "movlpd", "movddup", "movsldup");
                 set_xdesc(inst, m64, m64, m64, xmm);
                 break;
+            case 0x13:
+                rm81632_r81632(inst->op == 16? "movlpd": "movlps", 0, inst);
+                set_xdesc(inst, m64, m64, 0, 0);
+                break;
+            case 0x14:
+                r81632_rm81632(inst->op == 16? "unpcklpd": "unpcklps", 0, inst);
+                set_xdesc(inst, xmm, xmm, 0, 0);
+                break;
+            case 0x15:
+                r81632_rm81632(inst->op == 16? "unpckhpd": "unpckhps", 0, inst);
+                set_xdesc(inst, xmm, xmm, 0, 0);
+                break;
+            case 0x16:
+                r81632_rm81632("", 0, inst);
+                set_xmnem(inst, inst->description[1] == rm? "movhps": "movlhps", "movhpd", "", "movshdup");
+                set_xdesc(inst, inst->description[1] == r? rxmm: m64, xmm, 0, xmm);
+                break;
+            case 0x17:
+                rm81632_r81632("", 0, inst);
+                set_xmnem(inst, "movhps", "movhpd", "", "");
+                set_xdesc(inst, m64, m64, 0, 0);
+                break;
+
         }
 
         return;
