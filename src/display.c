@@ -119,7 +119,7 @@ void display_instr(struct instr* inst, char* strtab, Elf32_Sym* text_syms, size_
                             sprintf(buff, "%s]", buff);
                         } else {
                             if(!inst->mrm.mod) {
-                                if(inst->mrm.rm == 5) sprintf(buff, "%s0x%X]", buff, inst->operands[i]);
+                                if(inst->mrm.rm == 5) sprintf(buff, "%s0x%x]", buff, inst->operands[i]);
                                 else sprintf(buff, "%s%s]", buff, reg32[inst->mrm.rm]);
                             } else sprintf(buff, "%s%s+0x%x]", buff, reg32[inst->mrm.rm], inst->operands[i]);
                         }
