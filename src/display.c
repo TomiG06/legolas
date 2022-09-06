@@ -56,6 +56,15 @@ const char* get_ptr_type(struct instr* inst, uint8_t idx) {
      return rm_ptr[(int)log2(size)-3];
 }
 
+const char* get_reg_type(int mnum) {
+    switch(mnum) {
+        case sti:   return "st";
+        case rxmm:  return "xmm";
+        case dr:    return "dr";
+        case cr:    return "cr";
+    }
+}
+
 void display_instr(struct instr* inst, char* strtab, Elf32_Sym* text_syms, size_t ts_count) {
     
     putchar('\t');
@@ -134,10 +143,10 @@ void display_instr(struct instr* inst, char* strtab, Elf32_Sym* text_syms, size_
                 strcpy(buff, sreg_operand[inst->operands[i]]);
                 break;
             case sti:
-                sprintf(buff, "st%d", inst->operands[i]);
-                break;
             case rxmm:
-                sprintf(buff, "xmm%d", inst->operands[i]);
+            case dr:
+            case cr:
+                sprintf(buff, "%s%d", get_reg_type(inst->description[i]), inst->operands[i]);
                 break;
             case ptr:
                 sprintf(buff, "0x%x:0x%x", inst->operands[i+1], inst->operands[i]);

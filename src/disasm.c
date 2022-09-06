@@ -420,6 +420,25 @@ void set_instruction(struct instr* inst) {
                 set_xmnem(inst, "movhps", "movhpd", "", "");
                 set_xdesc(inst, m64, m64, 0, 0);
                 break;
+            case 0x20:
+            case 0x21:
+                r81632_rm81632("mov", 0, inst);
+                inst->description[1] = inst->opcode == 0x20? cr: dr;
+                break;
+            case 0x22:
+            case 0x23:
+                r81632_rm81632("mov", 0, inst);
+                inst->description[0] = inst->opcode == 0x22? cr: dr;
+                break;
+                
+            case 0x28:
+            case 0x29:
+                if(inst->opcode == 0x28) r81632_rm81632("", 0, inst);
+                else rm81632_r81632("", 0, inst);
+                set_xmnem(inst, "movaps", "movapd", "", "");
+                set_xdesc(inst, xmm, xmm, 0, 0);
+                break;
+
 
         }
 
