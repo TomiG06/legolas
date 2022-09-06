@@ -438,8 +438,6 @@ void set_instruction(struct instr* inst) {
                 set_xmnem(inst, "movaps", "movapd", "", "");
                 set_xdesc(inst, xmm, xmm, 0, 0);
                 break;
-
-
         }
 
         return;
@@ -1566,6 +1564,20 @@ void set_instruction(struct instr* inst) {
     }
 }
 
+static char hex_byte[8] = "";
+static char hex_code[64] = "";
+
+void add_byte(uint8_t byte) {
+    sprintf(hex_byte, " %02x", byte);
+    strcat(hex_code, hex_byte);
+}
+
+void print_bytes(char nl) {
+    printf("  %-20s ", hex_code);
+    if(nl) putchar(10);
+    memset(hex_code, 0, sizeof(hex_code));
+}
+
 void start_disassembly(Elf32_Shdr shdr, char* strtab, Elf32_Sym* text_syms, size_t ts_count) {
     struct instr* instruction;
     char hex_code[32] = "";
@@ -1594,17 +1606,25 @@ void start_disassembly(Elf32_Shdr shdr, char* strtab, Elf32_Sym* text_syms, size
         //display instruction
         printf("%4x:", starting_position + shdr.sh_addr); /* instruction position */
 
-        for(int x = starting_position; x < counter; x++) {
-            sprintf(hex_byte, " %02x",  machine_code[x]);
-            strcat(hex_code, hex_byte);
+        uint32_t idx;
+        for(idx = starting_position; idx < counter && idx < starting_position+7; idx++) {
+            add_byte(machine_code[idx]);
         }
 
-        printf("  %-20s ", hex_code);         /* instruction in machine code */
+        print_bytes(0);
 
         display_instr(instruction, strtab, text_syms, ts_count);    /* instruction in assembly */
 
+        if(idx < counter) {
+            printf("%4x:", starting_position + shdr.sh_addr + 7);
+            for(idx; idx < counter; idx++) {
+                add_byte(machine_code[idx]);
+            }
+
+            print_bytes(1);
+        }
+
         free(instruction);
-        memset(hex_code, 0, sizeof(hex_code)) ;
         starting_position = counter;
     }
 }
