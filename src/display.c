@@ -60,6 +60,7 @@ const char* get_reg_type(int mnum) {
     switch(mnum) {
         case sti:   return "st";
         case rxmm:  return "xmm";
+        case rmm:   return "mm";
         case dr:    return "dr";
         case cr:    return "cr";
     }
@@ -146,6 +147,7 @@ void display_instr(struct instr* inst, char* strtab, Elf32_Sym* text_syms, size_
             case rxmm:
             case dr:
             case cr:
+            case rmm:
                 sprintf(buff, "%s%d", get_reg_type(inst->description[i]), inst->operands[i]);
                 break;
             case ptr:

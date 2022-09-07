@@ -9,6 +9,7 @@
 enum {
     r = 1,
     rxmm,
+    rmm,
     cr,
     dr,
     rm,

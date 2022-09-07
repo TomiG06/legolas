@@ -56,6 +56,8 @@ uint8_t set_prefixes(struct instr* inst) {
         }
 
         read_b(1, &pfx);
+
+        if(inst->extended) break;
     }
 
     inst->opcode = pfx;
@@ -237,23 +239,29 @@ void setfdesc(struct instr* inst, uint8_t rm_replacement) {
     }
 }
 
-void set_xdesc(struct instr* inst, int none, int on66, int onf2, int onf3) {
+void set_xdesc(struct instr* inst, int on_reg, int none, int on66, int onf2, int onf3, int m_idx) {
+    int was_reg = 0;
     for(size_t i = 0; i < inst->opernum; i++) {
-        if(inst->description[i] == r) inst->description[i] = rxmm;
-        else if(inst->description[i] == rm) {
+        if(inst->description[i] == r && i != m_idx) inst->description[i] = on_reg;
+
+        if(i == m_idx) {
+            if(inst->description[i] == r) was_reg = 1; //r\m cases
+
             if(inst->op == 16) {
-                inst->description[i] = on66;
+                if(on66) inst->description[i] = on66;
                 inst->op = 32;
             } else if(inst->repn) {
-                inst->description[i] = onf2;
+                if(onf2) inst->description[i] = onf2;
                 inst->repn = 0;
             } else if(inst->rep) {
-                inst->description[i] = onf3;
+                if(onf3) inst->description[i] = onf3;
                 inst->rep = 0;
             } else {
-                inst->description[i] = none;
+                if(none) inst->description[i] = none;
             }
-          }
+
+            if(was_reg) inst->description[i] = r;
+        }
     }
 }
 
@@ -391,34 +399,34 @@ void set_instruction(struct instr* inst) {
                 if(inst->opcode == 0x10)    r81632_rm81632("", 0, inst);
                 else                        rm81632_r81632("", 0, inst);
                 
-                set_xdesc(inst, xmm, xmm, m64, m32);
+                set_xdesc(inst, rxmm, xmm, xmm, m64, m32, inst->opcode == 0x10);
                 break;
             case 0x12:
                 r81632_rm81632("", 0, inst);
                 set_xmnem(inst, inst->description[1] == rm? "movlps": "movhlps", "movlpd", "movddup", "movsldup");
-                set_xdesc(inst, m64, m64, m64, xmm);
+                set_xdesc(inst, rxmm, m64, m64, m64, xmm, 1);
                 break;
             case 0x13:
                 rm81632_r81632(inst->op == 16? "movlpd": "movlps", 0, inst);
-                set_xdesc(inst, m64, m64, 0, 0);
+                set_xdesc(inst, rxmm, m64, m64, 0, 0, 0);
                 break;
             case 0x14:
                 r81632_rm81632(inst->op == 16? "unpcklpd": "unpcklps", 0, inst);
-                set_xdesc(inst, xmm, xmm, 0, 0);
+                set_xdesc(inst, rxmm, xmm, xmm, 0, 0, 1);
                 break;
             case 0x15:
                 r81632_rm81632(inst->op == 16? "unpckhpd": "unpckhps", 0, inst);
-                set_xdesc(inst, xmm, xmm, 0, 0);
+                set_xdesc(inst, rxmm, xmm, xmm, 0, 0, 1);
                 break;
             case 0x16:
                 r81632_rm81632("", 0, inst);
                 set_xmnem(inst, inst->description[1] == rm? "movhps": "movlhps", "movhpd", "", "movshdup");
-                set_xdesc(inst, inst->description[1] == r? rxmm: m64, xmm, 0, xmm);
+                set_xdesc(inst, rxmm, m64, xmm, 0, xmm, 1);
                 break;
             case 0x17:
                 rm81632_r81632("", 0, inst);
                 set_xmnem(inst, "movhps", "movhpd", "", "");
-                set_xdesc(inst, m64, m64, 0, 0);
+                set_xdesc(inst, rxmm, m64, m64, 0, 0, 0);
                 break;
             case 0x20:
             case 0x21:
@@ -430,13 +438,39 @@ void set_instruction(struct instr* inst) {
                 r81632_rm81632("mov", 0, inst);
                 inst->description[0] = inst->opcode == 0x22? cr: dr;
                 break;
-                
             case 0x28:
             case 0x29:
                 if(inst->opcode == 0x28) r81632_rm81632("", 0, inst);
                 else rm81632_r81632("", 0, inst);
                 set_xmnem(inst, "movaps", "movapd", "", "");
-                set_xdesc(inst, xmm, xmm, 0, 0);
+                set_xdesc(inst, rxmm, xmm, xmm, 0, 0, inst->opcode == 0x28);
+                break;
+            case 0x2A:
+                r81632_rm81632("", 0, inst);
+                set_xmnem(inst, "cvtpi2ps", "cvtpi2pd", "cvtsi2sd", "cvtsi2ss");
+                set_xdesc(inst, rxmm, m64, m64, 0, 0, 1);
+                if(inst->description[1] == rxmm) inst->description[1] = r;
+                break;
+            case 0x2B:
+                rm81632_r81632("", 0, inst);
+                set_xmnem(inst, "movntps", "movntpd", "", "");
+                set_xdesc(inst, rxmm, xmm, xmm, 0, 0, 0);
+                break;
+            case 0x2C:
+                r81632_rm81632("", 0, inst);
+                set_xmnem(inst, "cvttps2pi", "cvttpd2pi", "cvttsd2si", "cvtsss2si");
+                set_xdesc(inst, inst->rep|inst->repn? r: rmm, m64, xmm, m64, m32, 1);
+                break;
+            case 0x2D:
+                r81632_rm81632("", 0, inst);
+                set_xmnem(inst, "cvtps2pi", "cvtpd2pi", "cvtsd2si", "cvtss2pi");
+                set_xdesc(inst, inst->rep|inst->repn? r: rmm, m64, xmm, m64, m32, 1);
+                break;
+            case 0x2E:
+            case 0x2F:
+                r81632_rm81632("", 0, inst);
+                set_xmnem(inst, inst->opcode == 0x2e? "ucomiss": "comiss", inst->opcode == 0x2e? "ucomisd": "comisd", "", "");
+                set_xdesc(inst, rxmm, m32, m64, 0, 0, 1);
                 break;
         }
 
