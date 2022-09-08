@@ -475,12 +475,26 @@ void set_instruction(struct instr* inst) {
                 set_xdesc(inst, rxmm, m32, m64, 0, 0, 1);
                 break;
             case 0x30:
+                set_mn(inst, "wrmsr");
+                break;
             case 0x31:
+                set_mn(inst, "rdtsc");
+                break;
             case 0x32:
+                set_mn(inst, "rdmsr");
+                break;
             case 0x33:
+                set_mn(inst, "rdpmc");
+                break;
             case 0x34:
+                set_mn(inst, "sysenter");
+                break;
             case 0x35:
+                set_mn(inst, "sysexit");
+                break;
             case 0x37:
+                set_mn(inst, "getsec");
+                break;
         }
 
         return;
