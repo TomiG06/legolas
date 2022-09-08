@@ -54,6 +54,8 @@ uint8_t set_prefixes(struct instr* inst) {
                 inst->seg = pfx;
                 break;
         }
+        
+        if(!inst->extended) inst->before_extended = pfx;
 
         read_b(1, &pfx);
 
@@ -247,13 +249,13 @@ void set_xdesc(struct instr* inst, int on_reg, int none, int on66, int onf2, int
         if(i == m_idx) {
             if(inst->description[i] == r) was_reg = 1; //r\m cases
 
-            if(inst->op == 16) {
+            if(inst->before_extended == OP_SIZE) {
                 if(on66) inst->description[i] = on66;
                 inst->op = 32;
-            } else if(inst->repn) {
+            } else if(inst->before_extended == REPNE) {
                 if(onf2) inst->description[i] = onf2;
                 inst->repn = 0;
-            } else if(inst->rep) {
+            } else if(inst->before_extended == REP_REPE) {
                 if(onf3) inst->description[i] = onf3;
                 inst->rep = 0;
             } else {
@@ -267,10 +269,10 @@ void set_xdesc(struct instr* inst, int on_reg, int none, int on66, int onf2, int
 
 void set_xmnem(struct instr* inst, char* none, char* on66, char* onf2, char* onf3) {
     inst->mnem_is_set = 0;
-    if(inst->op == 16)      set_mn(inst, on66);
-    else if(inst->repn)     set_mn(inst, onf2);
-    else if(inst->rep)      set_mn(inst, onf3);
-    else                    set_mn(inst, none);
+    if(inst->before_extended == OP_SIZE)        set_mn(inst, on66);
+    else if(inst->before_extended == REPNE)     set_mn(inst, onf2);
+    else if(inst->before_extended == REP_REPE)  set_mn(inst, onf3);
+    else                                        set_mn(inst, none);
 }
 
 //assemble Mod R/M byte
@@ -472,6 +474,13 @@ void set_instruction(struct instr* inst) {
                 set_xmnem(inst, inst->opcode == 0x2e? "ucomiss": "comiss", inst->opcode == 0x2e? "ucomisd": "comisd", "", "");
                 set_xdesc(inst, rxmm, m32, m64, 0, 0, 1);
                 break;
+            case 0x30:
+            case 0x31:
+            case 0x32:
+            case 0x33:
+            case 0x34:
+            case 0x35:
+            case 0x37:
         }
 
         return;

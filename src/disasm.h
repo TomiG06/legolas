@@ -65,6 +65,7 @@ struct instr {
     uint8_t lock;
 
     uint8_t extended;
+    uint8_t before_extended;
 
     //bytes
     struct MODRM mrm;
