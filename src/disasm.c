@@ -97,9 +97,6 @@ void set_mn(struct instr* i, char* mnemonic) {
     }
 }
 
-//Set description (not really used)
-void set_desc(struct instr* inst, char* desc) { strcpy(inst->description, desc); }
-
 void get_operands(struct instr* inst, char rm_index) {
     /*
         The purpose of this function is
@@ -1637,8 +1634,6 @@ void print_bytes(char nl) {
 
 void start_disassembly(Elf32_Shdr shdr, char* strtab, Elf32_Sym* text_syms, size_t ts_count) {
     struct instr* instruction;
-    char hex_code[32] = "";
-    char hex_byte[5]  = "";   //Just to remove the warning
     uint32_t starting_position = 0;
 
     while(counter < shdr.sh_size) {
