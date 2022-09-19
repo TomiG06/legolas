@@ -83,6 +83,7 @@ struct instr {
     uint8_t mnem_is_set;
 
     uint8_t opcode;
+    uint8_t sec_opcode; //This thing exists in some extended instructions
     char mnemonic[16]; //it isn't that long
     uint32_t operands[4];
 };

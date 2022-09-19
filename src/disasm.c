@@ -275,6 +275,13 @@ void set_xmnem(struct instr* inst, char* none, char* on66, char* onf2, char* onf
 //assemble Mod R/M byte
 uint8_t asm_modrm(struct instr* inst) { return (inst->mrm.mod << 6) | (inst->mrm.reg << 3) | inst->mrm.rm; }
 
+void sec_op(struct instr* inst) {
+    /*
+        we are passing it as a uint ptr in order to remove the warning
+    */
+    read_b(1, (uint32_t*)&inst->sec_opcode);
+}
+
 //Check opcode and set mnemonic/operands accordingly
 void set_instruction(struct instr* inst) {
     if(inst->extended) {
@@ -492,6 +499,57 @@ void set_instruction(struct instr* inst) {
             case 0x37:
                 set_mn(inst, "getsec");
                 break;
+            case 0x38:
+                sec_op(inst);
+                mod_rm(inst);
+                get_operands(inst, (inst->sec_opcode != 0xF1 | inst->before_extended != 0));
+                inst->opernum = 2;
+                
+                switch(inst->sec_opcode) {
+                    case 0x00:
+                        set_mn(inst, "pshufb");
+                    case 0x01:
+                        set_mn(inst, "phaddw");
+                    case 0x02:
+                        set_mn(inst, "phaddd");
+                    case 0x03:
+                        set_mn(inst, "phaddsw");
+                    case 0x04:
+                        set_mn(inst, "pmaddubsw");
+                    case 0x05:
+                        set_mn(inst, "phsubw");
+                    case 0x06:
+                        set_mn(inst, "phsubd");
+                    case 0x07:
+                        set_mn(inst, "phsubsw");
+                    case 0x08:
+                        set_mn(inst, "psignb");
+                    case 0x09:
+                        set_mn(inst, "psignw");
+                    case 0x0A:
+                        set_mn(inst, "psignd");
+                    case 0x0B:
+                        set_mn(inst, "pmulhrsw");
+                    case 0x10:
+                        set_mn(inst, "pblendvb");
+                    case 0x14:
+                        set_mn(inst, "blendvps");
+                    case 0x15:
+                        set_mn(inst, "blendvpd");
+                    case 0x17:
+                        set_mn(inst, "ptest");
+                    case 0x1C:
+                        set_mn(inst, "pabsb");
+                    case 0x1D:
+                        set_mn(inst, "pabsw");
+                    case 0x1E:
+                        set_mn(inst, "pabsd");
+                        inst->description[0] = inst->before_extended == 0x66? rxmm: rmm;
+                        set_xdesc(inst, 0, m64, xmm, 0, 0, 1);
+                        break;
+
+                }
+
         }
 
         return;
