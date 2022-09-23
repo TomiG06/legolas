@@ -500,53 +500,118 @@ void set_instruction(struct instr* inst) {
                 set_mn(inst, "getsec");
                 break;
             case 0x38:
-                sec_op(inst);
-                mod_rm(inst);
-                get_operands(inst, (inst->sec_opcode != 0xF1 | inst->before_extended != 0));
-                inst->opernum = 2;
+            {
+                    sec_op(inst);
+                    if(inst->sec_opcode == 0xF1 && !inst->before_extended) rm81632_r81632("", 0, inst);
+                    else r81632_rm81632("", 0, inst);
+                    inst->opernum = 2;
+                    inst->mnem_is_set = 0;
+
+                    uint8_t sec_oper = 0;
                 
-                switch(inst->sec_opcode) {
-                    case 0x00:
-                        set_mn(inst, "pshufb");
-                    case 0x01:
-                        set_mn(inst, "phaddw");
-                    case 0x02:
-                        set_mn(inst, "phaddd");
-                    case 0x03:
-                        set_mn(inst, "phaddsw");
-                    case 0x04:
-                        set_mn(inst, "pmaddubsw");
-                    case 0x05:
-                        set_mn(inst, "phsubw");
-                    case 0x06:
-                        set_mn(inst, "phsubd");
-                    case 0x07:
-                        set_mn(inst, "phsubsw");
-                    case 0x08:
-                        set_mn(inst, "psignb");
-                    case 0x09:
-                        set_mn(inst, "psignw");
-                    case 0x0A:
-                        set_mn(inst, "psignd");
-                    case 0x0B:
-                        set_mn(inst, "pmulhrsw");
-                    case 0x10:
-                        set_mn(inst, "pblendvb");
-                    case 0x14:
-                        set_mn(inst, "blendvps");
-                    case 0x15:
-                        set_mn(inst, "blendvpd");
-                    case 0x17:
-                        set_mn(inst, "ptest");
-                    case 0x1C:
-                        set_mn(inst, "pabsb");
-                    case 0x1D:
-                        set_mn(inst, "pabsw");
-                    case 0x1E:
-                        set_mn(inst, "pabsd");
-                        inst->description[0] = inst->before_extended == 0x66? rxmm: rmm;
-                        set_xdesc(inst, 0, m64, xmm, 0, 0, 1);
-                        break;
+                    switch(inst->sec_opcode) {
+                        case 0x00:
+                            set_mn(inst, "pshufb");
+                        case 0x01:
+                            set_mn(inst, "phaddw");
+                        case 0x02:
+                            set_mn(inst, "phaddd");
+                        case 0x03:
+                            set_mn(inst, "phaddsw");
+                        case 0x04:
+                            set_mn(inst, "pmaddubsw");
+                        case 0x05:
+                            set_mn(inst, "phsubw");
+                        case 0x06:
+                            set_mn(inst, "phsubd");
+                        case 0x07:
+                            set_mn(inst, "phsubsw");
+                        case 0x08:
+                            set_mn(inst, "psignb");
+                        case 0x09:
+                            set_mn(inst, "psignw");
+                        case 0x0A:
+                            set_mn(inst, "psignd");
+                        case 0x0B:
+                            set_mn(inst, "pmulhrsw");
+                        case 0x10:
+                            set_mn(inst, "pblendvb");
+                        case 0x14:
+                            set_mn(inst, "blendvps");
+                        case 0x15:
+                            set_mn(inst, "blendvpd");
+                        case 0x17:
+                            set_mn(inst, "ptest");
+                        case 0x1C:
+                            set_mn(inst, "pabsb");
+                        case 0x1D:
+                            set_mn(inst, "pabsw");
+                        case 0x1E:
+                            set_mn(inst, "pabsd");
+                            inst->description[0] = inst->before_extended == 0x66? rxmm: rmm;
+                            sec_oper = m64;
+                            break;
+                        case 0x20:
+                        case 0x30:
+                            set_mn(inst, "pmovsxbw");
+                        case 0x23:
+                        case 0x33:
+                            set_mn(inst, "pmovsxwd");
+                        case 0x25:
+                        case 0x35:
+                            set_mn(inst, "pmovsxdq");
+                            sec_oper = m64;
+                            break;
+                        case 0x21:
+                        case 0x31:
+                            set_mn(inst, "pmovsxbd");
+                        case 0x24:
+                        case 0x34:
+                            set_mn(inst, "pmovsxwq");
+                            sec_oper = m32;
+                            break;
+                        case 0x22:
+                        case 0x32:
+                            set_mn(inst, "pmovsxbq");
+                            sec_oper = m16;
+                            break;
+                        case 0x28:
+                            set_mn(inst, "pmuldq");
+                        case 0x29:
+                            set_mn(inst, "pcmpeqq");
+                        case 0x2A:
+                            set_mn(inst, "movntdqa");
+                        case 0x2B:
+                            set_mn(inst, "packusdw");
+                        case 0x37:
+                            set_mn(inst, "pcmpgtq");
+                        case 0x38:
+                            set_mn(inst, "pminsb");
+                        case 0x39:
+                            set_mn(inst, "pminsd");
+                        case 0x3A:
+                            set_mn(inst, "pminuw");
+                        case 0x3B:
+                            set_mn(inst, "pminud");
+                        case 0x3C:
+                            set_mn(inst, "pmaxsb");
+                        case 0x3D:
+                            set_mn(inst, "pmaxsd");
+                        case 0x3E:
+                            set_mn(inst, "pmaxuw");
+                        case 0x3F:
+                            set_mn(inst, "pmaxud");
+                        case 0x40:
+                            set_mn(inst, "pmulld");
+                        case 0x41:
+                            set_mn(inst, "phminposuw");
+                            sec_oper = xmm;
+                            break;
+                        
+                    }
+
+                    if(inst->sec_opcode > 0x1E && inst->sec_opcode < 0x80) inst->description[0] = rxmm;
+                    set_xdesc(inst, 0, sec_oper, xmm, 0, 0, 1);
 
                 }
 
