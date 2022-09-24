@@ -51,6 +51,8 @@ const char* get_ptr_type(struct instr* inst, uint8_t idx) {
             return "";
         case xmm:
             return "xmmword";
+        case m128:
+            return "oword";
     }
  
      return rm_ptr[(int)log2(size)-3];
@@ -109,6 +111,7 @@ void display_instr(struct instr* inst, char* strtab, Elf32_Sym* text_syms, size_
             case m32:
             case m64:
             case m80:
+            case m128:
             case far:
             case xmm:
                 sprintf(buff, "%s[%s%s", get_ptr_type(inst, i), sreg_buff, inst->seg? ":": "");

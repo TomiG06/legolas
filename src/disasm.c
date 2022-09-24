@@ -502,7 +502,7 @@ void set_instruction(struct instr* inst) {
             case 0x38:
             {
                     sec_op(inst);
-                    if(inst->sec_opcode == 0xF1 && !inst->before_extended) rm81632_r81632("", 0, inst);
+                    if(inst->sec_opcode == 0xF1 && inst->before_extended != 0xF2) rm81632_r81632("", 0, inst);
                     else r81632_rm81632("", 0, inst);
                     inst->opernum = 2;
                     inst->mnem_is_set = 0;
@@ -607,11 +607,34 @@ void set_instruction(struct instr* inst) {
                             set_mn(inst, "phminposuw");
                             sec_oper = xmm;
                             break;
-                        
+                        case 0x80:
+                            set_mn(inst, "invept");
+                        case 0x81:
+                            set_mn(inst, "invvpid");
+                            inst->operands[0] = r32 | inst->operands[0];
+                            inst->description[1] = m128;
+                            break;
+                        case 0xF0:
+                            set_xmnem(inst, "movbe", "movbe", "crc32", "movbe");
+                            if(inst->before_extended == 0xF2) {
+                                inst->op = 8;
+                                inst->operands[0] = r32 | inst->operands[0];
+                                inst->repn = 0;
+                            }
+                            break;
+                        case 0xF1:
+                            if(inst->before_extended == 0xF2) {
+                                set_mn(inst, "crc32");
+                                inst->operands[0] = r32 | inst->operands[0];
+                                inst->repn = 0;
+                            } else {
+                                set_mn(inst, "movbe");
+                            }
+                            break;
                     }
 
                     if(inst->sec_opcode > 0x1E && inst->sec_opcode < 0x80) inst->description[0] = rxmm;
-                    set_xdesc(inst, 0, sec_oper, xmm, 0, 0, 1);
+                    if(inst->sec_opcode < 0x80) set_xdesc(inst, 0, sec_oper, xmm, 0, 0, 1);
 
                 }
 
