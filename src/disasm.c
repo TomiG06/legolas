@@ -638,6 +638,46 @@ void set_instruction(struct instr* inst) {
 
                 }
 
+            //Don't break these
+            case 0x80:
+                set_mn(inst, "jo");
+            case 0x81:
+                set_mn(inst, "jno");
+            case 0x82:
+                set_mn(inst, "jb");
+            case 0x83:
+                set_mn(inst, "jnb");
+            case 0x84:
+                set_mn(inst, "jz");
+            case 0x85:
+                set_mn(inst, "jnz");
+            case 0x86:
+                set_mn(inst, "jbe");
+            case 0x87:
+                set_mn(inst, "jnbe");
+            case 0x88:
+                set_mn(inst, "js");
+            case 0x89:
+                set_mn(inst, "jns");
+            case 0x8A:
+                set_mn(inst, "jp");
+            case 0x8B:
+                set_mn(inst, "jnp");
+            case 0x8C:
+                set_mn(inst, "jl");
+            case 0x8D:
+                set_mn(inst, "jnl");
+            case 0x8E:
+                set_mn(inst, "jle");
+            case 0x8F:
+                set_mn(inst, "jnle");
+
+                inst->opernum = 1;
+
+                inst->description[0] = rel1632;
+
+                read_b(4, &inst->operands[0]);
+                break;
         }
 
         return;
@@ -1811,7 +1851,7 @@ void start_disassembly(Elf32_Shdr shdr, char* strtab, Elf32_Sym* text_syms, size
 
         print_bytes(0);
 
-        display_instr(instruction, strtab, text_syms, ts_count);    /* instruction in assembly */
+        display_instr(instruction, strtab, text_syms, ts_count, shdr.sh_addr);    /* instruction in assembly */
 
         if(idx < counter) {
             printf("%4x:", starting_position + shdr.sh_addr + 7);

@@ -1,3 +1,4 @@
+#include <elf.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -68,7 +69,7 @@ const char* get_reg_type(int mnum) {
     }
 }
 
-void display_instr(struct instr* inst, char* strtab, Elf32_Sym* text_syms, size_t ts_count) {
+void display_instr(struct instr* inst, char* strtab, Elf32_Sym* text_syms, size_t ts_count, Elf32_Addr sh_addr) {
     
     putchar('\t');
 
@@ -164,20 +165,19 @@ void display_instr(struct instr* inst, char* strtab, Elf32_Sym* text_syms, size_
                     int32_t rel_addr;
 
                     if(inst->op == 8)       rel_addr = (int8_t)  inst->operands[i];
-                    else if(inst->op == 16) rel_addr = (int16_t) inst->operands[i];
                     else                    rel_addr = (int32_t) inst->operands[i];
                     
                     if(ts_count) {
                         for(size_t j = 0; j < ts_count; j++) {
                             if(counter + rel_addr == text_syms[j].st_value) {
-                                sprintf(buff, "<%s>", strtab + text_syms[j].st_name);
+                                sprintf(buff, "%x <%s>", counter + rel_addr, strtab + text_syms[j].st_name);
                                 break;
                             }
 
                             if(j + 1 == ts_count) sprintf(buff, "0x%x", inst->operands[i] + counter);
                         }
 
-                    } else sprintf(buff, "0x%x", inst->operands[i] + counter);
+                    } else sprintf(buff, "0x%x", rel_addr + counter + sh_addr);
                 }
                 break;
         }
