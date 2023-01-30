@@ -4,7 +4,11 @@
 Legolas is an IA-32 x86 disassembler that uses a NASM like syntax.
 It takes ELF files as input.
 
-The reason this repo exists is the fact that I was bored and wanted to spend my summer holidays on a project like this.
+## Point of Existence
+I have been building this program for 3 main reasons:
+* Learn C
+* Learn to maintain medium sized projects
+* Learn more about machine language and how an x86 CPU works
 
 ## Notes
 * the project is still under development
