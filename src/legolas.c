@@ -11,7 +11,7 @@ static const char magic_num[] = {ELFMAG0, ELFMAG1, ELFMAG2, ELFMAG3};
 
 //This function returns the index of a section, or -1 if the section does not exist
 int16_t index_of_str_in_sh(char* str, char* tab, Elf32_Shdr* array, size_t len) {
-    for(int16_t x = 0; x < len; x++) if(!strcmp(str, tab + array[x].sh_name)) return x;
+    for(size_t x = 0; x < len; x++) if(!strcmp(str, tab + array[x].sh_name)) return x;
     return -1;
 }
 
@@ -34,7 +34,7 @@ int main(int argc, char* argv[]) {
     fread(&hdr, sizeof(Elf32_Ehdr), 1, f);
 
     //Check if file is ELF
-    if(strncmp(magic_num, hdr.e_ident, sizeof(magic_num))) {
+    if(strncmp(magic_num, (const char*) hdr.e_ident, sizeof(magic_num))) {
         printf("File '%s' is not ELF\n", argv[1]);
         return 1;
     }

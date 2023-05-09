@@ -10,6 +10,10 @@
 #include "display.h"
 #include "helpers.h"
 
+#pragma GCC diagnostic ignored "-Wimplicit-fallthrough"
+
+/* Fallthroughs are part of the functionality */
+
 static uint8_t prefixes[] = {OP_SIZE, ADDR_SIZE, REP_REPE, REPNE, LOCK, SEG_ES, SEG_CS, SEG_SS, SEG_DS, SEG_FS, SEG_GS, EXTENDED};
 
 //Function to check if a number is in an array
@@ -26,7 +30,7 @@ char contained(uint8_t el, uint8_t arr[], const size_t size) {
     for prefixes. When a byte is not in prefixes, it means
     that it is the opcode
 */
-uint8_t set_prefixes(struct instr* inst) {
+void set_prefixes(struct instr* inst) {
     uint32_t pfx = 0;
     read_b(1, &pfx);
 
@@ -75,6 +79,10 @@ void mod_rm(struct instr* inst) {
     inst->mrm.rm  = byte & 7;
 }
 
+//assemble Mod R/M byte
+uint8_t asm_modrm(struct instr* inst) { return (inst->mrm.mod << 6) | (inst->mrm.reg << 3) | inst->mrm.rm; }
+
+
 //decode SIB byte
 void sib(uint8_t rmidx, struct instr* inst) {
     uint32_t byte = 0;
@@ -97,7 +105,7 @@ void set_mn(struct instr* i, char* mnemonic) {
     }
 }
 
-void get_operands(struct instr* inst, char rm_index) {
+void get_operands(struct instr* inst, uint8_t rm_index) {
     /*
         The purpose of this function is
         to analyze the Mod R/M and SIB bytes
@@ -238,9 +246,9 @@ void setfdesc(struct instr* inst, uint8_t rm_replacement) {
     }
 }
 
-void set_xdesc(struct instr* inst, int on_reg, int none, int on66, int onf2, int onf3, int m_idx) {
+void set_xdesc(struct instr* inst, int on_reg, int none, int on66, int onf2, int onf3, uint8_t m_idx) {
     int was_reg = 0;
-    for(size_t i = 0; i < inst->opernum; i++) {
+    for(uint8_t i = 0; i < inst->opernum; i++) {
         if(inst->description[i] == r && i != m_idx) inst->description[i] = on_reg;
 
         if(i == m_idx) {
@@ -271,9 +279,6 @@ void set_xmnem(struct instr* inst, char* none, char* on66, char* onf2, char* onf
     else if(inst->before_extended == REP_REPE)  set_mn(inst, onf3);
     else                                        set_mn(inst, none);
 }
-
-//assemble Mod R/M byte
-uint8_t asm_modrm(struct instr* inst) { return (inst->mrm.mod << 6) | (inst->mrm.reg << 3) | inst->mrm.rm; }
 
 void sec_op(struct instr* inst) {
     /*
@@ -501,11 +506,13 @@ void set_instruction(struct instr* inst) {
                 break;
             case 0x38:
             {
+                    
                     sec_op(inst);
                     if(inst->sec_opcode == 0xF1 && inst->before_extended != 0xF2) rm81632_r81632("", 0, inst);
                     else r81632_rm81632("", 0, inst);
                     inst->opernum = 2;
                     inst->mnem_is_set = 0;
+
 
                     uint8_t sec_oper = 0;
                 
@@ -575,12 +582,14 @@ void set_instruction(struct instr* inst) {
                             set_mn(inst, "pmovsxbq");
                             sec_oper = m16;
                             break;
+                        case 0x2A:
+                            set_mn(inst, "movntdqa");
+                            sec_oper = m128;
+                            break;
                         case 0x28:
                             set_mn(inst, "pmuldq");
                         case 0x29:
                             set_mn(inst, "pcmpeqq");
-                        case 0x2A:
-                            set_mn(inst, "movntdqa");
                         case 0x2B:
                             set_mn(inst, "packusdw");
                         case 0x37:
@@ -637,6 +646,8 @@ void set_instruction(struct instr* inst) {
                     if(inst->sec_opcode < 0x80) set_xdesc(inst, 0, sec_oper, xmm, 0, 0, 1);
 
                 }
+
+                break;
 
             //Don't break these
             case 0x80:
@@ -1804,6 +1815,8 @@ void set_instruction(struct instr* inst) {
     }
 }
 
+#pragma GCC diagnostic pop
+
 static char hex_byte[8] = "";
 static char hex_code[64] = "";
 
@@ -1855,7 +1868,7 @@ void start_disassembly(Elf32_Shdr shdr, char* strtab, Elf32_Sym* text_syms, size
 
         if(idx < counter) {
             printf("%4x:", starting_position + shdr.sh_addr + 7);
-            for(idx; idx < counter; idx++) {
+            for(; idx < counter; idx++) {
                 add_byte(machine_code[idx]);
             }
 

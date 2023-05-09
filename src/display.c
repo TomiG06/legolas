@@ -59,6 +59,9 @@ const char* get_ptr_type(struct instr* inst, uint8_t idx) {
      return rm_ptr[(int)log2(size)-3];
 }
 
+#pragma GCC diagnostic ignored "-Wreturn-type"
+
+/* Disables "control reaches end of non-void function" warning */
 const char* get_reg_type(int mnum) {
     switch(mnum) {
         case sti:   return "st";
@@ -68,6 +71,8 @@ const char* get_reg_type(int mnum) {
         case cr:    return "cr";
     }
 }
+
+#pragma GCC diagnostic pop
 
 void display_instr(struct instr* inst, char* strtab, Elf32_Sym* text_syms, size_t ts_count, Elf32_Addr sh_addr) {
     
@@ -81,7 +86,7 @@ void display_instr(struct instr* inst, char* strtab, Elf32_Sym* text_syms, size_
     //print mnemonic
     printf("%-10s", inst->mnemonic);
 
-    char* buff = (char*)malloc(100);
+    char* buff = (char*)malloc(128);
     char sreg_buff[3] = "";
 
     if(!buff) malloc_fail_and_exit();
@@ -119,23 +124,23 @@ void display_instr(struct instr* inst, char* strtab, Elf32_Sym* text_syms, size_
 
                 switch(inst->addr) {
                     case 16:
-                        if(!inst->mrm.mod && inst->mrm.rm == 6) sprintf(buff, "%s0x%x]", buff, inst->operands[i]);
+                        if(!inst->mrm.mod && inst->mrm.rm == 6) sprintf(buff + strlen(buff), "0x%x]",  inst->operands[i]);
                         else {
-                            sprintf(buff, "%s%s", buff, rm16[inst->mrm.rm]);
-                            if(inst->mrm.mod) sprintf(buff, "%s%c0x%x", buff, '+', inst->operands[i]);
-                            sprintf(buff, "%s]", buff);
+                            sprintf(buff + strlen(buff), "%s", rm16[inst->mrm.rm]);
+                            if(inst->mrm.mod) sprintf(buff + strlen(buff), "%c0x%x", '+', inst->operands[i]);
+                            strcat(buff, "]");
                         }
                         break;
                     case 32:
                         if(inst->hasSIB) {
-                            sprintf(buff, "%s%s%s%s*%.0f", buff, inst->mrm.mod || inst->sb.base != ebp? reg32[inst->sb.base]: "", inst->mrm.mod || inst->sb.base != ebp? "+": "", reg32[inst->sb.index], pow(2, inst->sb.scale));
-                            if(inst->mrm.mod || inst->sb.base == ebp) sprintf(buff, "%s+0x%x", buff, inst->operands[i]);
-                            sprintf(buff, "%s]", buff);
+                            sprintf(buff + strlen(buff), "%s%s%s*%.0f", inst->mrm.mod || inst->sb.base != ebp? reg32[inst->sb.base]: "", inst->mrm.mod || inst->sb.base != ebp? "+": "", reg32[inst->sb.index], pow(2, inst->sb.scale));
+                            if(inst->mrm.mod || inst->sb.base == ebp) sprintf(buff + strlen(buff), "+0x%x", inst->operands[i]);
+                            strcat(buff, "]");
                         } else {
                             if(!inst->mrm.mod) {
-                                if(inst->mrm.rm == 5) sprintf(buff, "%s0x%x]", buff, inst->operands[i]);
-                                else sprintf(buff, "%s%s]", buff, reg32[inst->mrm.rm]);
-                            } else sprintf(buff, "%s%s+0x%x]", buff, reg32[inst->mrm.rm], inst->operands[i]);
+                                if(inst->mrm.rm == 5) sprintf(buff + strlen(buff), "0x%x]", inst->operands[i]);
+                                else sprintf(buff + strlen(buff), "%s]", reg32[inst->mrm.rm]);
+                            } else sprintf(buff + strlen(buff), "%s+0x%x]", reg32[inst->mrm.rm], inst->operands[i]);
                         }
                         break;
                 }
