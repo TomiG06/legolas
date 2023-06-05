@@ -1052,7 +1052,7 @@ void set_instruction(struct instr* inst) {
             }
             break;
         case NOP:
-            set_mn(inst, inst->rep? "nop": "pause");
+            set_mn(inst, inst->rep? "pause": "nop");
             if(inst->rep) inst->rep = 0;
             break;
  
@@ -1826,7 +1826,7 @@ void add_byte(uint8_t byte) {
 }
 
 void print_bytes(char nl) {
-    printf("  %-20s ", hex_code);
+    printf(" %-20s", hex_code);
     if(nl) putchar(10);
     memset(hex_code, 0, sizeof(hex_code));
 }
