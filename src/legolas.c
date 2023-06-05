@@ -7,6 +7,8 @@
 #include "disasm.h"
 #include "helpers.h"
 
+#define ACCEPTED_SYMBOL(info) (ELF32_ST_TYPE(info) == STT_NOTYPE || ELF32_ST_TYPE(info) == STT_FUNC)
+
 static const char magic_num[] = {ELFMAG0, ELFMAG1, ELFMAG2, ELFMAG3};
 
 //This function returns the index of a section, or -1 if the section does not exist
@@ -123,11 +125,11 @@ int main(int argc, char* argv[]) {
         Elf32_Sym* section_syms = NULL;
 
         if(dotsymtab_index > 0) {
-            for(size_t j = 0; j < entries; j++) if(symtab[j].st_shndx == i && !ELF32_ST_TYPE(symtab[j].st_info)) section_syms_count++;
+            for(size_t j = 0; j < entries; j++) if(symtab[j].st_shndx == i && ACCEPTED_SYMBOL(symtab[j].st_info)) section_syms_count++;
 
             section_syms = malloc(sizeof(Elf32_Sym) * section_syms_count);
 
-            for(size_t j = 0, c = 0; j < entries; j++) if(symtab[j].st_shndx == i && !ELF32_ST_TYPE(symtab[j].st_info)) section_syms[c++] = symtab[j];
+            for(size_t j = 0, c = 0; j < entries; j++) if(symtab[j].st_shndx == i && ACCEPTED_SYMBOL(symtab[j].st_info)) section_syms[c++] = symtab[j];
         }
 
         //Go to the beginning of the section
